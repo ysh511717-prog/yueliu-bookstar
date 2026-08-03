@@ -13,9 +13,16 @@
         /* 顶部导航 */
         .header {
             background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-            color: #fff; padding: 20px; text-align: center;
+            color: #fff; padding: 20px; text-align: center; position: relative;
             box-shadow: 0 2px 8px rgba(0,0,0,0.15);
         }
+        .back-btn {
+            position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
+            background: rgba(255,255,255,0.2); color: #fff; border: 1px solid rgba(255,255,255,0.3);
+            padding: 6px 14px; border-radius: 20px; font-size: 13px; cursor: pointer;
+            text-decoration: none; transition: all 0.2s; backdrop-filter: blur(4px);
+        }
+        .back-btn:hover { background: rgba(255,255,255,0.35); }
         .header h1 { font-size: 22px; margin-bottom: 4px; }
         .header p { font-size: 13px; opacity: 0.85; }
         /* 标签栏 */
@@ -160,6 +167,7 @@
     </script>
 
     <div class="header">
+        <a class="back-btn" href="index.html">← 首页</a>
         <h1>📚 阅流·书星 · 出版社投放后台</h1>
         <p>发布图书任务 · AI自动生成数字人短视频 · 多平台分发带货</p>
     </div>
