@@ -648,6 +648,89 @@
             gap: 8px;
         }
         .tip-banner .tip-icon { font-size: 18px; flex-shrink: 0; }
+
+        /* ── AI聊天浮窗 ── */
+        .ai-chat-btn {
+            position: fixed; bottom: 24px; right: 24px; z-index: 9998;
+            width: 56px; height: 56px; border-radius: 50%; cursor: pointer;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed); color: #fff;
+            border: none; font-size: 24px; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 20px rgba(79,70,229,0.35); transition: all 0.3s;
+        }
+        .ai-chat-btn:hover { transform: scale(1.08); box-shadow: 0 6px 28px rgba(79,70,229,0.45); }
+        .ai-chat-btn.pulse { animation: aiPulse 2s infinite; }
+        @keyframes aiPulse { 0%,100%{box-shadow:0 4px 20px rgba(79,70,229,0.35)} 50%{box-shadow:0 4px 32px rgba(79,70,229,0.6)} }
+
+        .ai-chat-panel {
+            position: fixed; bottom: 96px; right: 24px; z-index: 9999;
+            width: 400px; max-width: calc(100vw - 40px); height: 560px; max-height: calc(100vh - 140px);
+            background: #fff; border-radius: 16px; border: 1px solid var(--border);
+            display: none; flex-direction: column; overflow: hidden;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.15);
+        }
+        .ai-chat-panel.open { display: flex; }
+        .ai-chat-header {
+            padding: 16px 20px; background: var(--brand-light);
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+        }
+        .ai-chat-header-left { display: flex; align-items: center; gap: 10px; }
+        .ai-chat-header-icon { font-size: 1.3rem; }
+        .ai-chat-header-title { font-weight: 700; font-size: 0.95rem; color: var(--brand); }
+        .ai-chat-header-sub { font-size: 0.7rem; color: var(--text-muted); }
+        .ai-chat-close { background: none; border: none; color: #999; font-size: 1.2rem; cursor: pointer; padding: 4px 8px; border-radius: 6px; }
+        .ai-chat-close:hover { background: rgba(0,0,0,0.05); color: #333; }
+        .ai-chat-header-actions { display: flex; gap: 6px; align-items: center; }
+        .ai-chat-settings-btn { background: none; border: none; color: #999; font-size: 0.95rem; cursor: pointer; padding: 4px 8px; border-radius: 6px; }
+        .ai-chat-settings-btn:hover { background: rgba(0,0,0,0.05); color: var(--brand); }
+
+        .ai-chat-messages {
+            flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px;
+            scroll-behavior: smooth; background: #fafafa;
+        }
+        .ai-chat-messages::-webkit-scrollbar { width: 4px; }
+        .ai-chat-messages::-webkit-scrollbar-thumb { background: #ddd; border-radius: 2px; }
+
+        .ai-msg { max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 0.83rem; line-height: 1.6; animation: msgIn 0.3s ease; }
+        @keyframes msgIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+        .ai-msg.user { align-self: flex-end; background: var(--brand); color: #fff; border-bottom-right-radius: 4px; }
+        .ai-msg.assistant { align-self: flex-start; background: #fff; color: var(--text); border: 1px solid #eee; border-bottom-left-radius: 4px; }
+        .ai-msg.system { align-self: center; background: transparent; color: var(--text-muted); font-size: 0.75rem; text-align: center; max-width: 90%; }
+        .ai-msg.typing { align-self: flex-start; background: #fff; color: var(--text-muted); font-style: italic; font-size: 0.78rem; border: 1px solid #eee; border-radius: 12px; }
+
+        .ai-chat-suggestions { padding: 8px 16px; display: flex; gap: 8px; flex-wrap: wrap; border-top: 1px solid #f0f0f0; flex-shrink: 0; }
+        .ai-suggest-chip { padding: 5px 14px; border-radius: 999px; font-size: 0.75rem; cursor: pointer; background: #f5f3ff; border: 1px solid #e8e5ff; color: var(--brand); transition: all 0.2s; white-space: nowrap; }
+        .ai-suggest-chip:hover { background: var(--brand); color: #fff; border-color: var(--brand); }
+
+        .ai-chat-input-area { padding: 12px 16px; border-top: 1px solid #eee; display: flex; gap: 8px; align-items: flex-end; flex-shrink: 0; background: #fff; }
+        .ai-chat-input { flex: 1; background: #f5f5f5; border: 1px solid #e5e5e5; color: var(--text); padding: 10px 14px; border-radius: 10px; font-size: 0.85rem; font-family: inherit; outline: none; resize: none; max-height: 80px; transition: border-color 0.2s; }
+        .ai-chat-input:focus { border-color: var(--brand); background: #fff; }
+        .ai-chat-input::placeholder { color: #bbb; }
+        .ai-chat-send { flex-shrink: 0; width: 40px; height: 40px; border-radius: 50%; background: var(--brand); color: #fff; border: none; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: opacity 0.2s; }
+        .ai-chat-send:hover { opacity: 0.85; }
+        .ai-chat-send:disabled { opacity: 0.3; cursor: not-allowed; }
+
+        .ai-setup-overlay { position: fixed; inset: 0; z-index: 99999; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; }
+        .ai-setup-dialog { background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 32px; width: 420px; max-width: 90vw; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+        .ai-setup-dialog h3 { color: var(--brand); font-size: 1.1rem; margin-bottom: 6px; }
+        .ai-setup-dialog .desc { color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 20px; line-height: 1.5; }
+        .ai-setup-dialog input { width: 100%; background: #f5f5f5; border: 1px solid #e5e5e5; color: var(--text); padding: 10px 14px; border-radius: 8px; font-size: 0.85rem; outline: none; font-family: monospace; margin-bottom: 12px; }
+        .ai-setup-dialog input:focus { border-color: var(--brand); }
+        .ai-setup-dialog .setup-actions { display: flex; gap: 10px; }
+        .ai-setup-dialog button { flex: 1; padding: 10px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer; border: none; }
+        .ai-setup-btn-primary { background: var(--brand); color: #fff; }
+        .ai-setup-btn-secondary { background: transparent; border: 1px solid #ddd; color: #666; border-radius: 8px; }
+        .ai-setup-dialog .hint { margin-top: 14px; font-size: 0.72rem; color: var(--text-muted); line-height: 1.5; }
+        .ai-setup-dialog .hint a { color: var(--brand); text-decoration: underline; }
+        .ai-setup-dialog .error { color: #ef4444; font-size: 0.78rem; margin-top: 6px; display: none; }
+        .ai-status-bar { padding: 4px 16px; font-size: 0.65rem; color: var(--text-muted); text-align: center; border-bottom: 1px solid #f0f0f0; flex-shrink: 0; display: none; }
+        .ai-status-bar.connected { color: #10b981; display: block; }
+        .ai-status-bar.disconnected { color: #999; display: block; }
+
+        @media (max-width: 480px) {
+            .ai-chat-panel { width: calc(100vw - 16px); height: 480px; right: 8px; bottom: 80px; border-radius: 12px; }
+            .ai-chat-btn { width: 48px; height: 48px; font-size: 20px; bottom: 16px; right: 16px; }
+        }
     </style>
 </head>
 <body>
@@ -1104,5 +1187,345 @@
 
         init();
     </script>
+
+    <!-- ====== AI创作助手脚本 ====== -->
+    <script>
+    (function () {
+        'use strict';
+
+        // ── DOM引用 ──
+        const btn = document.getElementById('ai-chat-btn');
+        const panel = document.getElementById('ai-chat-panel');
+        const closeBtn = document.getElementById('ai-chat-close');
+        const settingsBtn = document.getElementById('ai-chat-settings');
+        const msgArea = document.getElementById('ai-chat-messages');
+        const suggestionsEl = document.getElementById('ai-chat-suggestions');
+        const input = document.getElementById('ai-chat-input');
+        const sendBtn = document.getElementById('ai-chat-send');
+        const statusBar = document.getElementById('ai-status-bar');
+
+        // ── API Key管理 ──
+        const STORAGE_KEY = 'yueliu_zhipu_api_key';
+
+        function getApiKey() { return localStorage.getItem(STORAGE_KEY); }
+        function setApiKey(key) { localStorage.setItem(STORAGE_KEY, key); updateStatus(); }
+        function hasApiKey() { return !!getApiKey(); }
+
+        function updateStatus() {
+            if (hasApiKey()) {
+                statusBar.className = 'ai-status-bar connected';
+                statusBar.textContent = '● AI已连接 · GLM-4-Flash';
+            } else {
+                statusBar.className = 'ai-status-bar disconnected';
+                statusBar.textContent = '○ 未配置API Key · 点击 ⚙️ 设置';
+            }
+        }
+
+        // ── Setup弹窗 ──
+        function showSetup(callback) {
+            const overlay = document.createElement('div');
+            overlay.className = 'ai-setup-overlay';
+            overlay.innerHTML = `
+                <div class="ai-setup-dialog">
+                    <h3>⚡ 配置 AI 引擎</h3>
+                    <div class="desc">输入你的智谱AI API Key即可启用智能创作助手。<br>Key仅存储在您的浏览器中，不会上传至任何服务器。</div>
+                    <input type="password" id="ai-api-key-input" placeholder="粘贴API Key（格式：xxxxxxxx.xxxxxxxxxxxxx）">
+                    <div class="error" id="ai-setup-error">API Key格式不正确</div>
+                    <div class="setup-actions">
+                        <button class="ai-setup-btn-secondary" id="ai-setup-skip">暂不配置</button>
+                        <button class="ai-setup-btn-primary" id="ai-setup-save">保存并启用</button>
+                    </div>
+                    <div class="hint">
+                        还没有Key？<a href="https://open.bigmodel.cn/usercenter/apikeys" target="_blank">点此免费获取 →</a><br>
+                        新用户注册即送额度，GLM-4-Flash 免费调用。
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+
+            const keyInput = overlay.querySelector('#ai-api-key-input');
+            const errEl = overlay.querySelector('#ai-setup-error');
+
+            overlay.querySelector('#ai-setup-skip').addEventListener('click', () => {
+                document.body.removeChild(overlay);
+                if (callback) callback(false);
+            });
+
+            overlay.querySelector('#ai-setup-save').addEventListener('click', () => {
+                const key = keyInput.value.trim();
+                if (key.length < 10 || !key.includes('.')) {
+                    errEl.style.display = 'block';
+                    return;
+                }
+                setApiKey(key);
+                document.body.removeChild(overlay);
+                if (callback) callback(true);
+            });
+
+            keyInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') overlay.querySelector('#ai-setup-save').click();
+            });
+
+            keyInput.focus();
+        }
+
+        // ── 对话历史 ──
+        let chatHistory = [];
+
+        function resetChat() {
+            chatHistory = [];
+            msgArea.innerHTML = '';
+        }
+
+        function addMessage(role, text) {
+            const div = document.createElement('div');
+            div.className = 'ai-msg ' + role;
+            div.textContent = text;
+            msgArea.appendChild(div);
+            msgArea.scrollTop = msgArea.scrollHeight;
+            return div;
+        }
+
+        function showTyping() {
+            const div = document.createElement('div');
+            div.className = 'ai-msg typing';
+            div.id = 'typing-indicator';
+            div.textContent = 'AI正在创作...';
+            msgArea.appendChild(div);
+            msgArea.scrollTop = msgArea.scrollHeight;
+            return div;
+        }
+
+        function removeTyping() {
+            const el = document.getElementById('typing-indicator');
+            if (el) el.remove();
+        }
+
+        // ── 快捷提问 ──
+        function loadSuggestions() {
+            const list = [
+                '帮我写一条童书推广文案',
+                '生成职场成长类书籍的短视频脚本',
+                '心理疗愈类书籍怎么带货？',
+                '写一条30秒的口播文案',
+            ];
+            suggestionsEl.innerHTML = list.map(s => `<button class="ai-suggest-chip">${s}</button>`).join('');
+            suggestionsEl.querySelectorAll('.ai-suggest-chip').forEach(chip => {
+                chip.addEventListener('click', () => {
+                    input.value = chip.textContent;
+                    input.focus();
+                });
+            });
+        }
+
+        // ── API 调用 ──
+        async function callZhipuAPI(apiKey, messages) {
+            const systemMsg = `你是"阅流·书星"平台的AI创作助手，专门帮助创作者生成图书推广文案和短视频脚本。
+
+你的能力：
+1. 根据书名和赛道，生成爆款短视频口播文案（30秒/60秒）
+2. 为图书推广撰写吸引人的标题和简介
+3. 提供各赛道（童书、职场、心理、文学、综合）的带货话术
+4. 分析图书卖点，提炼金句
+
+规则：
+- 文案要口语化、有感染力，适合短视频口播
+- 开头3秒要抓人眼球（用悬念、反常识、情感共鸣）
+- 童书赛道：温馨、有教育意义、戳中家长痛点
+- 职场赛道：干货感、紧迫感、解决实际痛点  
+- 心理赛道：温暖治愈、情感共鸣、金句频出
+- 文学赛道：有深度、有情怀、激发阅读欲
+- 结尾一定要有明确的行动号召（CTA）
+- 用中文回复，控制在300字以内`;
+
+            const body = {
+                model: 'glm-4-flash',
+                messages: [
+                    { role: 'system', content: systemMsg },
+                    ...messages.filter(m => m.role !== 'system').slice(-10),
+                ],
+                temperature: 0.8,
+                max_tokens: 1000,
+            };
+
+            const res = await fetch('https://open.bigmodel.cn/api/paas/v4/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`,
+                },
+                body: JSON.stringify(body),
+            });
+
+            if (!res.ok) {
+                const errText = await res.text();
+                if (res.status === 401 || res.status === 403) {
+                    throw new Error('API Key无效或已过期，请重新设置');
+                }
+                if (res.status === 429) {
+                    throw new Error('API调用频率过高，请稍后再试');
+                }
+                throw new Error('AI服务异常（' + res.status + '），请稍后重试');
+            }
+
+            const data = await res.json();
+            return data.choices?.[0]?.message?.content || '（AI返回为空，请重试）';
+        }
+
+        function fallbackReply(userMsg) {
+            if (userMsg.includes('文案') || userMsg.includes('脚本') || userMsg.includes('推广')) {
+                return '📝 **关于图书推广文案的建议：**\n\n1. 开头用悬念或痛点切入（"你知道吗？90%的人……"）\n2. 中间讲书的核心卖点+读者感受\n3. 结尾号召行动（"点击下方链接，现在就入手"）\n\n💡 点击右上角 ⚙️ 配置API Key即可让AI自动生成定制文案！';
+            }
+            const replies = [
+                '好主意！图书带货的核心是"真诚推荐+场景共鸣"。你可以在任务大厅找到合适的书，选定后系统会辅助生成文案。',
+                '创作文案的关键：先确定目标读者是谁、他们的痛点是什么、这本书如何解决它。需要我帮你梳理思路吗？',
+                '爆款文案公式：痛点引入 → 书中解法 → 个人感受 → 行动号召。你可以试试这个结构！',
+                '图书推广的精髓在于"种草"而非"硬推"——分享你的真实阅读感受，读者自然会想买。',
+            ];
+            return replies[Math.floor(Math.random() * replies.length)] + '\n\n💡 点击右上角 ⚙️ 配置API Key即可解锁AI智能文案生成。';
+        }
+
+        // ── 发送消息 ──
+        async function sendMessage() {
+            const text = input.value.trim();
+            if (!text) return;
+
+            input.value = '';
+            input.style.height = 'auto';
+            sendBtn.disabled = true;
+
+            addMessage('user', text);
+            chatHistory.push({ role: 'user', content: text });
+            showTyping();
+
+            try {
+                const apiKey = getApiKey();
+                let reply;
+
+                if (apiKey) {
+                    reply = await callZhipuAPI(apiKey, chatHistory);
+                } else {
+                    removeTyping();
+                    await new Promise(r => setTimeout(r, 600));
+                    reply = fallbackReply(text);
+                    showTyping();
+                    await new Promise(r => setTimeout(r, 300));
+                }
+
+                removeTyping();
+                addMessage('assistant', reply);
+                chatHistory.push({ role: 'assistant', content: reply });
+            } catch (e) {
+                removeTyping();
+                const errMsg = e.message || '出了点问题，请稍后重试';
+                addMessage('system', '⚠️ ' + errMsg);
+                if (errMsg.includes('API Key')) {
+                    addMessage('system', '点击右上角 ⚙️ 重新设置API Key');
+                }
+            }
+
+            sendBtn.disabled = false;
+            input.focus();
+        }
+
+        // ── 打开聊天面板 ──
+        function openChat() {
+            if (!hasApiKey()) {
+                resetChat();
+                addMessage('system', '👋 欢迎使用 AI 创作助手！');
+                addMessage('system', '首次使用需要配置智谱AI API Key（免费获取，新用户送额度）。');
+                showSetup((configured) => {
+                    if (configured) {
+                        resetChat();
+                        addMessage('assistant', '✨ AI引擎已就绪！我是阅流·书星的 AI 创作助手。\n\n我可以帮你：\n📝 生成图书推广文案\n🎬 撰写短视频口播脚本\n💡 提炼图书卖点和金句\n🔥 各赛道带货话术\n\n直接告诉我书名和赛道，或者描述你的需求，我来帮你创作！');
+                        loadSuggestions();
+                        panel.classList.add('open');
+                        btn.style.display = 'none';
+                        input.focus();
+                    } else {
+                        addMessage('assistant', '好的，暂时使用离线模式。随时点击 ⚙️ 图标配置API Key，解锁完整AI创作能力。');
+                        addMessage('assistant', '有任何创作需求都可以问我，我会尽力提供建议！');
+                        loadSuggestions();
+                        panel.classList.add('open');
+                        btn.style.display = 'none';
+                        input.focus();
+                    }
+                });
+                return;
+            }
+
+            panel.classList.add('open');
+            btn.style.display = 'none';
+
+            if (msgArea.children.length === 0) {
+                addMessage('assistant', '✨ 你好！我是阅流·书星的 AI 创作助手。\n\n我可以帮你：\n📝 生成图书推广文案\n🎬 撰写短视频口播脚本\n💡 提炼图书卖点和金句\n🔥 各赛道带货话术\n\n直接告诉我书名和赛道，我来帮你创作！');
+                loadSuggestions();
+            }
+            input.focus();
+        }
+
+        // ── 事件绑定 ──
+        btn.addEventListener('click', openChat);
+
+        closeBtn.addEventListener('click', () => {
+            panel.classList.remove('open');
+            btn.style.display = 'flex';
+        });
+
+        settingsBtn.addEventListener('click', () => {
+            showSetup((configured) => {
+                if (configured) {
+                    resetChat();
+                    addMessage('assistant', '✅ API Key 已更新！AI创作引擎已就绪，开始创作吧。');
+                    loadSuggestions();
+                }
+            });
+        });
+
+        sendBtn.addEventListener('click', sendMessage);
+
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        input.addEventListener('input', () => {
+            input.style.height = 'auto';
+            input.style.height = Math.min(input.scrollHeight, 80) + 'px';
+        });
+
+        // ── 初始状态 ──
+        updateStatus();
+        setTimeout(() => btn.classList.add('pulse'), 5000);
+
+    })();
+    </script>
+    <!-- ====== AI创作助手浮窗 ====== -->
+    <div class="ai-chat-btn" id="ai-chat-btn" title="AI创作助手">🤖</div>
+    <div class="ai-chat-panel" id="ai-chat-panel">
+        <div class="ai-chat-header">
+            <div class="ai-chat-header-left">
+                <span class="ai-chat-header-icon">✨</span>
+                <div>
+                    <div class="ai-chat-header-title">AI 创作助手</div>
+                    <div class="ai-chat-header-sub">GLM-4 · 文案生成</div>
+                </div>
+            </div>
+            <div class="ai-chat-header-actions">
+                <button class="ai-chat-settings-btn" id="ai-chat-settings" title="设置API Key">⚙️</button>
+                <button class="ai-chat-close" id="ai-chat-close">✕</button>
+            </div>
+        </div>
+        <div class="ai-status-bar" id="ai-status-bar"></div>
+        <div class="ai-chat-messages" id="ai-chat-messages"></div>
+        <div class="ai-chat-suggestions" id="ai-chat-suggestions"></div>
+        <div class="ai-chat-input-area">
+            <textarea class="ai-chat-input" id="ai-chat-input" placeholder="输入你的创作需求..." rows="1"></textarea>
+            <button class="ai-chat-send" id="ai-chat-send">➤</button>
+        </div>
+    </div>
+
 </body>
 </html>
