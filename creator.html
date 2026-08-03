@@ -1188,6 +1188,31 @@
         init();
     </script>
 
+    <!-- ====== AI创作助手浮窗 ====== -->
+    <div class="ai-chat-btn" id="ai-chat-btn" title="AI创作助手">🤖</div>
+    <div class="ai-chat-panel" id="ai-chat-panel">
+        <div class="ai-chat-header">
+            <div class="ai-chat-header-left">
+                <span class="ai-chat-header-icon">✨</span>
+                <div>
+                    <div class="ai-chat-header-title">AI 创作助手</div>
+                    <div class="ai-chat-header-sub">DeepSeek · 文案生成</div>
+                </div>
+            </div>
+            <div class="ai-chat-header-actions">
+                <button class="ai-chat-settings-btn" id="ai-chat-settings" title="设置API Key">⚙️</button>
+                <button class="ai-chat-close" id="ai-chat-close">✕</button>
+            </div>
+        </div>
+        <div class="ai-status-bar" id="ai-status-bar"></div>
+        <div class="ai-chat-messages" id="ai-chat-messages"></div>
+        <div class="ai-chat-suggestions" id="ai-chat-suggestions"></div>
+        <div class="ai-chat-input-area">
+            <textarea class="ai-chat-input" id="ai-chat-input" placeholder="输入你的创作需求..." rows="1"></textarea>
+            <button class="ai-chat-send" id="ai-chat-send">➤</button>
+        </div>
+    </div>
+
     <!-- ====== AI创作助手脚本 ====== -->
     <script>
     (function () {
@@ -1205,7 +1230,7 @@
         const statusBar = document.getElementById('ai-status-bar');
 
         // ── API Key管理 ──
-        const STORAGE_KEY = 'yueliu_zhipu_api_key';
+        const STORAGE_KEY = 'yueliu_deepseek_api_key';
 
         function getApiKey() { return localStorage.getItem(STORAGE_KEY); }
         function setApiKey(key) { localStorage.setItem(STORAGE_KEY, key); updateStatus(); }
@@ -1214,7 +1239,7 @@
         function updateStatus() {
             if (hasApiKey()) {
                 statusBar.className = 'ai-status-bar connected';
-                statusBar.textContent = '● AI已连接 · GLM-4-Flash';
+                statusBar.textContent = '● AI已连接 · DeepSeek-V3';
             } else {
                 statusBar.className = 'ai-status-bar disconnected';
                 statusBar.textContent = '○ 未配置API Key · 点击 ⚙️ 设置';
@@ -1228,16 +1253,16 @@
             overlay.innerHTML = `
                 <div class="ai-setup-dialog">
                     <h3>⚡ 配置 AI 引擎</h3>
-                    <div class="desc">输入你的智谱AI API Key即可启用智能创作助手。<br>Key仅存储在您的浏览器中，不会上传至任何服务器。</div>
-                    <input type="password" id="ai-api-key-input" placeholder="粘贴API Key（格式：xxxxxxxx.xxxxxxxxxxxxx）">
-                    <div class="error" id="ai-setup-error">API Key格式不正确</div>
+                    <div class="desc">输入你的DeepSeek API Key即可启用智能创作助手。<br>Key仅存储在您的浏览器中，不会上传至任何服务器。</div>
+                    <input type="password" id="ai-api-key-input" placeholder="粘贴API Key（格式：sk-xxxxxxxxxxxxxxxx）">
+                    <div class="error" id="ai-setup-error">API Key格式不正确（应以sk-开头）</div>
                     <div class="setup-actions">
                         <button class="ai-setup-btn-secondary" id="ai-setup-skip">暂不配置</button>
                         <button class="ai-setup-btn-primary" id="ai-setup-save">保存并启用</button>
                     </div>
                     <div class="hint">
-                        还没有Key？<a href="https://open.bigmodel.cn/usercenter/apikeys" target="_blank">点此免费获取 →</a><br>
-                        新用户注册即送额度，GLM-4-Flash 免费调用。
+                        还没有Key？<a href="https://platform.deepseek.com/api_keys" target="_blank">点此免费获取 →</a><br>
+                        新用户注册即送500万token，deepseek-chat 免费调用。
                     </div>
                 </div>
             `;
@@ -1253,7 +1278,7 @@
 
             overlay.querySelector('#ai-setup-save').addEventListener('click', () => {
                 const key = keyInput.value.trim();
-                if (key.length < 10 || !key.includes('.')) {
+                if (key.length < 20 || !key.startsWith('sk-')) {
                     errEl.style.display = 'block';
                     return;
                 }
@@ -1319,7 +1344,7 @@
         }
 
         // ── API 调用 ──
-        async function callZhipuAPI(apiKey, messages) {
+        async function callDeepSeekAPI(apiKey, messages) {
             const systemMsg = `你是"阅流·书星"平台的AI创作助手，专门帮助创作者生成图书推广文案和短视频脚本。
 
 你的能力：
@@ -1339,7 +1364,7 @@
 - 用中文回复，控制在300字以内`;
 
             const body = {
-                model: 'glm-4-flash',
+                model: 'deepseek-chat',
                 messages: [
                     { role: 'system', content: systemMsg },
                     ...messages.filter(m => m.role !== 'system').slice(-10),
@@ -1348,7 +1373,7 @@
                 max_tokens: 1000,
             };
 
-            const res = await fetch('https://open.bigmodel.cn/api/paas/v4/chat/completions', {
+            const res = await fetch('https://api.deepseek.com/v1/chat/completions', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1365,6 +1390,9 @@
                 if (res.status === 429) {
                     throw new Error('API调用频率过高，请稍后再试');
                 }
+                if (res.status === 402) {
+                    throw new Error('账户余额不足，请充值后再试');
+                }
                 throw new Error('AI服务异常（' + res.status + '），请稍后重试');
             }
 
@@ -1374,7 +1402,7 @@
 
         function fallbackReply(userMsg) {
             if (userMsg.includes('文案') || userMsg.includes('脚本') || userMsg.includes('推广')) {
-                return '📝 **关于图书推广文案的建议：**\n\n1. 开头用悬念或痛点切入（"你知道吗？90%的人……"）\n2. 中间讲书的核心卖点+读者感受\n3. 结尾号召行动（"点击下方链接，现在就入手"）\n\n💡 点击右上角 ⚙️ 配置API Key即可让AI自动生成定制文案！';
+                return '📝 **关于图书推广文案的建议：**\n\n1. 开头用悬念或痛点切入（"你知道吗？90%的人……"）\n2. 中间讲书的核心卖点+读者感受\n3. 结尾号召行动（"点击下方链接，现在就入手"）\n\n💡 点击右上角 ⚙️ 配置DeepSeek API Key即可让AI自动生成定制文案！';
             }
             const replies = [
                 '好主意！图书带货的核心是"真诚推荐+场景共鸣"。你可以在任务大厅找到合适的书，选定后系统会辅助生成文案。',
@@ -1382,7 +1410,7 @@
                 '爆款文案公式：痛点引入 → 书中解法 → 个人感受 → 行动号召。你可以试试这个结构！',
                 '图书推广的精髓在于"种草"而非"硬推"——分享你的真实阅读感受，读者自然会想买。',
             ];
-            return replies[Math.floor(Math.random() * replies.length)] + '\n\n💡 点击右上角 ⚙️ 配置API Key即可解锁AI智能文案生成。';
+            return replies[Math.floor(Math.random() * replies.length)] + '\n\n💡 点击右上角 ⚙️ 配置DeepSeek API Key即可解锁AI智能文案生成。';
         }
 
         // ── 发送消息 ──
@@ -1403,7 +1431,7 @@
                 let reply;
 
                 if (apiKey) {
-                    reply = await callZhipuAPI(apiKey, chatHistory);
+                    reply = await callDeepSeekAPI(apiKey, chatHistory);
                 } else {
                     removeTyping();
                     await new Promise(r => setTimeout(r, 600));
@@ -1433,17 +1461,17 @@
             if (!hasApiKey()) {
                 resetChat();
                 addMessage('system', '👋 欢迎使用 AI 创作助手！');
-                addMessage('system', '首次使用需要配置智谱AI API Key（免费获取，新用户送额度）。');
+                addMessage('system', '首次使用需要配置DeepSeek API Key（免费注册，新用户送500万token）。');
                 showSetup((configured) => {
                     if (configured) {
                         resetChat();
-                        addMessage('assistant', '✨ AI引擎已就绪！我是阅流·书星的 AI 创作助手。\n\n我可以帮你：\n📝 生成图书推广文案\n🎬 撰写短视频口播脚本\n💡 提炼图书卖点和金句\n🔥 各赛道带货话术\n\n直接告诉我书名和赛道，或者描述你的需求，我来帮你创作！');
+                        addMessage('assistant', '✨ AI引擎已就绪！我是阅流·书星的 AI 创作助手（DeepSeek驱动）。\n\n我可以帮你：\n📝 生成图书推广文案\n🎬 撰写短视频口播脚本\n💡 提炼图书卖点和金句\n🔥 各赛道带货话术\n\n直接告诉我书名和赛道，或者描述你的需求，我来帮你创作！');
                         loadSuggestions();
                         panel.classList.add('open');
                         btn.style.display = 'none';
                         input.focus();
                     } else {
-                        addMessage('assistant', '好的，暂时使用离线模式。随时点击 ⚙️ 图标配置API Key，解锁完整AI创作能力。');
+                        addMessage('assistant', '好的，暂时使用离线模式。随时点击 ⚙️ 图标配置DeepSeek API Key，解锁完整AI创作能力。');
                         addMessage('assistant', '有任何创作需求都可以问我，我会尽力提供建议！');
                         loadSuggestions();
                         panel.classList.add('open');
@@ -1458,7 +1486,7 @@
             btn.style.display = 'none';
 
             if (msgArea.children.length === 0) {
-                addMessage('assistant', '✨ 你好！我是阅流·书星的 AI 创作助手。\n\n我可以帮你：\n📝 生成图书推广文案\n🎬 撰写短视频口播脚本\n💡 提炼图书卖点和金句\n🔥 各赛道带货话术\n\n直接告诉我书名和赛道，我来帮你创作！');
+                addMessage('assistant', '✨ 你好！我是阅流·书星的 AI 创作助手（DeepSeek驱动）。\n\n我可以帮你：\n📝 生成图书推广文案\n🎬 撰写短视频口播脚本\n💡 提炼图书卖点和金句\n🔥 各赛道带货话术\n\n直接告诉我书名和赛道，我来帮你创作！');
                 loadSuggestions();
             }
             input.focus();
@@ -1476,7 +1504,7 @@
             showSetup((configured) => {
                 if (configured) {
                     resetChat();
-                    addMessage('assistant', '✅ API Key 已更新！AI创作引擎已就绪，开始创作吧。');
+                    addMessage('assistant', '✅ API Key 已更新！DeepSeek创作引擎已就绪，开始创作吧。');
                     loadSuggestions();
                 }
             });
@@ -1502,30 +1530,6 @@
 
     })();
     </script>
-    <!-- ====== AI创作助手浮窗 ====== -->
-    <div class="ai-chat-btn" id="ai-chat-btn" title="AI创作助手">🤖</div>
-    <div class="ai-chat-panel" id="ai-chat-panel">
-        <div class="ai-chat-header">
-            <div class="ai-chat-header-left">
-                <span class="ai-chat-header-icon">✨</span>
-                <div>
-                    <div class="ai-chat-header-title">AI 创作助手</div>
-                    <div class="ai-chat-header-sub">GLM-4 · 文案生成</div>
-                </div>
-            </div>
-            <div class="ai-chat-header-actions">
-                <button class="ai-chat-settings-btn" id="ai-chat-settings" title="设置API Key">⚙️</button>
-                <button class="ai-chat-close" id="ai-chat-close">✕</button>
-            </div>
-        </div>
-        <div class="ai-status-bar" id="ai-status-bar"></div>
-        <div class="ai-chat-messages" id="ai-chat-messages"></div>
-        <div class="ai-chat-suggestions" id="ai-chat-suggestions"></div>
-        <div class="ai-chat-input-area">
-            <textarea class="ai-chat-input" id="ai-chat-input" placeholder="输入你的创作需求..." rows="1"></textarea>
-            <button class="ai-chat-send" id="ai-chat-send">➤</button>
-        </div>
-    </div>
 
 </body>
 </html>
