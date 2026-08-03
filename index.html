@@ -3,510 +3,948 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>阅流·书星</title>
+    <title>阅流·书星 — 图书推广AI短视频全自动平台</title>
+    <meta name="description" content="阅流·书星——AI驱动的图书推广平台。自动生成口播脚本、数字人短视频、多平台一键分发，靠推荐图书赚取佣金。">
     <style>
+        :root {
+            --bg-deep: #0a0a1a;
+            --bg-card: rgba(255,255,255,0.04);
+            --border: rgba(255,255,255,0.08);
+            --text: #e8e8f0;
+            --text-dim: #8b8ba0;
+            --text-muted: #5a5a70;
+            --purple: #a78bfa;
+            --purple-glow: rgba(167,139,250,0.25);
+            --teal: #2dd4bf;
+            --gold: #f59e0b;
+            --grad-main: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --grad-teal: linear-gradient(135deg, #0d9488 0%, #2dd4bf 100%);
+            --radius: 16px;
+            --radius-sm: 10px;
+            --transition: 0.3s cubic-bezier(0.4,0,0.2,1);
+        }
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
         body {
-            font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
-            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
-            color: #fff; min-height: 100vh;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            font-family: -apple-system, "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+            background: var(--bg-deep);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+            overflow-x: hidden;
         }
-        .logo { font-size: 48px; margin-bottom: 8px; }
-        h1 { font-size: 36px; margin-bottom: 8px; font-weight: 700; }
-        .subtitle { font-size: 16px; color: #a8b2c1; margin-bottom: 48px; }
-        .cards { display: flex; gap: 32px; flex-wrap: wrap; justify-content: center; }
-        .card {
-            background: rgba(255,255,255,0.06);
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+        /* ── 星空背景 ── */
+        .ambient-bg {
+            position: fixed; inset: 0; z-index: 0; pointer-events: none;
+            background:
+                radial-gradient(ellipse 80% 60% at 20% 10%, rgba(102,126,234,0.06), transparent 70%),
+                radial-gradient(ellipse 60% 50% at 80% 80%, rgba(118,75,162,0.06), transparent 70%),
+                radial-gradient(ellipse 50% 40% at 50% 50%, rgba(45,212,191,0.03), transparent 70%);
+        }
+        .stars {
+            position: fixed; inset: 0; z-index: 0; pointer-events: none;
+        }
+        .star {
+            position: absolute; border-radius: 50%;
+            background: #fff; animation: twinkle var(--dur) ease-in-out infinite;
+            animation-delay: var(--delay);
+        }
+        @keyframes twinkle {
+            0%, 100% { opacity: var(--min); }
+            50% { opacity: 1; }
+        }
+
+        /* ── 导航栏 ── */
+        .nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            padding: 16px 0;
+            transition: all var(--transition);
+        }
+        .nav.scrolled {
+            background: rgba(10,10,26,0.85);
             backdrop-filter: blur(16px);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 20px; padding: 40px 48px; width: 300px;
-            text-align: center; cursor: pointer;
-            transition: all 0.3s ease; text-decoration: none; color: inherit;
+            border-bottom: 1px solid var(--border);
+            padding: 10px 0;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.3);
         }
-        .card:hover {
+        .nav-inner {
+            max-width: 1200px; margin: 0 auto; padding: 0 24px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .nav-logo {
+            display: flex; align-items: center; gap: 10px;
+            text-decoration: none; color: var(--text); font-weight: 700; font-size: 1.15rem;
+        }
+        .nav-logo .logo-icon { font-size: 1.6rem; }
+        .nav-links { display: flex; gap: 8px; align-items: center; }
+        .nav-links a {
+            color: var(--text-dim); text-decoration: none; font-size: 0.88rem;
+            padding: 8px 16px; border-radius: 8px; transition: all var(--transition);
+        }
+        .nav-links a:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+        .nav-cta {
+            background: var(--grad-main); color: #fff; border: none;
+            padding: 9px 22px; border-radius: 8px; font-size: 0.85rem;
+            font-weight: 600; cursor: pointer; text-decoration: none;
+            transition: all var(--transition); display: inline-block;
+        }
+        .nav-cta:hover { transform: translateY(-1px); box-shadow: 0 4px 16px var(--purple-glow); }
+
+        /* ── 英雄区 ── */
+        .hero {
+            position: relative; z-index: 1;
+            padding: 140px 0 80px; text-align: center;
+        }
+        .hero-badge {
+            display: inline-block; padding: 6px 18px; border-radius: 999px;
+            font-size: 0.82rem; font-weight: 600; letter-spacing: 1px;
+            background: rgba(167,139,250,0.1); border: 1px solid rgba(167,139,250,0.2);
+            color: var(--purple); margin-bottom: 24px;
+            animation: fadeUp 0.6s ease;
+        }
+        .hero h1 {
+            font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 800;
+            line-height: 1.3; margin-bottom: 16px;
+            background: linear-gradient(135deg, #e8e8f0 0%, #a78bfa 50%, #764ba2 100%);
+            -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: fadeUp 0.6s ease 0.1s both;
+        }
+        .hero .subtitle {
+            font-size: 1.05rem; color: var(--text-dim); max-width: 640px;
+            margin: 0 auto 40px; animation: fadeUp 0.6s ease 0.2s both;
+        }
+        .hero-btns {
+            display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;
+            animation: fadeUp 0.6s ease 0.3s both;
+        }
+        .btn {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 14px 32px; border-radius: 12px; font-size: 0.95rem;
+            font-weight: 600; text-decoration: none; cursor: pointer;
+            transition: all var(--transition); border: none;
+        }
+        .btn-primary {
+            background: var(--grad-main); color: #fff;
+            box-shadow: 0 4px 20px var(--purple-glow);
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(167,139,250,0.35); }
+        .btn-outline {
+            background: transparent; color: var(--text);
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+        .btn-outline:hover { border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.03); }
+        .btn-teal {
+            background: var(--grad-teal); color: #fff;
+            box-shadow: 0 4px 20px rgba(45,212,191,0.2);
+        }
+        .btn-teal:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(45,212,191,0.3); }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── 数据统计 ── */
+        .stats-section {
+            position: relative; z-index: 1;
+            padding: 56px 0;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            background: rgba(255,255,255,0.012);
+        }
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px;
+        }
+        .stat-item { text-align: center; }
+        .stat-num {
+            font-size: clamp(1.6rem, 3.5vw, 2.4rem); font-weight: 800;
+            background: linear-gradient(135deg, var(--purple), var(--teal));
+            -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 6px;
+        }
+        .stat-label { font-size: 0.8rem; color: var(--text-dim); letter-spacing: 1px; }
+
+        /* ── 核心功能 ── */
+        .section { position: relative; z-index: 1; padding: 80px 0; }
+        .section-header { text-align: center; margin-bottom: 56px; }
+        .section-header h2 {
+            font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 700; margin-bottom: 10px;
+        }
+        .section-header p { color: var(--text-dim); font-size: 0.95rem; }
+
+        .features-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
+        }
+        .feature-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 32px 24px; text-align: center;
+            transition: all var(--transition); position: relative; overflow: hidden;
+        }
+        .feature-card::before {
+            content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+            width: 0; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--purple), transparent);
+            transition: width var(--transition);
+        }
+        .feature-card:hover::before { width: 60%; }
+        .feature-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(167,139,250,0.3);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.3), 0 0 0 1px rgba(167,139,250,0.1);
+        }
+        .feature-icon {
+            width: 64px; height: 64px; border-radius: 16px;
+            background: rgba(167,139,250,0.1); border: 1px solid rgba(167,139,250,0.15);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.6rem; margin: 0 auto 20px;
+            transition: all var(--transition);
+        }
+        .feature-card:hover .feature-icon {
             transform: translateY(-4px);
-            border-color: rgba(255,255,255,0.3);
-            background: rgba(255,255,255,0.1);
-            box-shadow: 0 20px 60px rgba(102,126,234,0.25);
+            box-shadow: 0 8px 24px var(--purple-glow);
         }
-        .card-creator:hover { border-color: #667eea; box-shadow: 0 20px 60px rgba(102,126,234,0.3); }
-        .card-publisher:hover { border-color: #11998e; box-shadow: 0 20px 60px rgba(17,153,142,0.3); }
-        .card-icon { font-size: 56px; margin-bottom: 16px; }
-        .card h2 { font-size: 24px; margin-bottom: 12px; }
-        .card p { font-size: 14px; color: #a8b2c1; line-height: 1.7; }
+        .feature-card h3 { font-weight: 700; font-size: 1.05rem; margin-bottom: 8px; }
+        .feature-card p { color: var(--text-dim); font-size: 0.85rem; line-height: 1.6; }
+
+        /* ── 工作流程 ── */
+        .workflow-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px;
+            position: relative;
+        }
+        .workflow-step {
+            text-align: center; position: relative; padding: 28px 16px;
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); transition: all var(--transition);
+        }
+        .workflow-step:hover {
+            transform: translateY(-4px);
+            border-color: rgba(45,212,191,0.3);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        .workflow-num {
+            width: 44px; height: 44px; border-radius: 50%;
+            background: var(--grad-teal); color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 1.1rem; margin: 0 auto 16px;
+        }
+        .workflow-step h4 { font-weight: 700; font-size: 0.95rem; margin-bottom: 6px; }
+        .workflow-step p { color: var(--text-dim); font-size: 0.8rem; line-height: 1.5; }
+        .workflow-arrow {
+            display: none;
+            position: absolute; top: 50%; right: -14px; transform: translateY(-50%);
+            font-size: 1.2rem; color: var(--teal); z-index: 2;
+        }
+        @media (min-width: 769px) { .workflow-arrow { display: block; } }
+
+        /* ── 赛道展示 ── */
+        .track-grid {
+            display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px;
+        }
+        .track-card {
+            text-align: center; padding: 24px 12px; border-radius: var(--radius-sm);
+            background: var(--bg-card); border: 1px solid var(--border);
+            transition: all var(--transition); cursor: default;
+        }
+        .track-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(245,158,11,0.3);
+            box-shadow: 0 8px 24px rgba(245,158,11,0.08);
+        }
+        .track-icon { font-size: 2rem; margin-bottom: 10px; }
+        .track-card h4 { font-size: 0.9rem; font-weight: 700; margin-bottom: 4px; }
+        .track-card p { color: var(--text-dim); font-size: 0.75rem; }
+
+        /* ── CTA ── */
+        .cta-section {
+            position: relative; z-index: 1; padding: 80px 0; text-align: center;
+            overflow: hidden;
+        }
+        .cta-section::before {
+            content: ''; position: absolute; inset: 0;
+            background: radial-gradient(ellipse 50% 60% at 50% 50%, rgba(167,139,250,0.06), transparent 70%);
+        }
+        .cta-section .container { position: relative; z-index: 1; }
+        .cta-section h2 {
+            font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 700; margin-bottom: 12px;
+        }
+        .cta-section p { color: var(--text-dim); margin-bottom: 36px; font-size: 0.95rem; }
+
+        /* ── 页脚 ── */
         .footer {
-            margin-top: 64px; font-size: 13px; color: #6b7280;
+            position: relative; z-index: 1;
+            padding: 40px 0; text-align: center;
+            border-top: 1px solid var(--border);
         }
+        .footer p { color: var(--text-muted); font-size: 0.8rem; margin-bottom: 6px; }
+        .footer-links { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-bottom: 12px; }
+        .footer-links a {
+            color: var(--text-dim); text-decoration: none; font-size: 0.8rem;
+            transition: color var(--transition);
+        }
+        .footer-links a:hover { color: var(--purple); }
+
+        /* ── 滚动入场动画 ── */
+        .reveal {
+            opacity: 0; transform: translateY(30px);
+            transition: opacity 0.7s ease, transform 0.7s ease;
+        }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
 
         /* ── AI聊天浮窗（暗色主题）── */
         .ai-chat-btn {
             position: fixed; bottom: 24px; right: 24px; z-index: 9998;
             width: 56px; height: 56px; border-radius: 50%; cursor: pointer;
-            background: linear-gradient(135deg, #667eea, #764ba2); color: #fff;
+            background: var(--grad-main); color: #fff;
             border: none; font-size: 24px; display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 4px 20px rgba(102,126,234,0.4); transition: all 0.3s;
+            box-shadow: 0 4px 20px var(--purple-glow); transition: all var(--transition);
         }
-        .ai-chat-btn:hover { transform: scale(1.08); box-shadow: 0 6px 28px rgba(102,126,234,0.55); }
+        .ai-chat-btn:hover { transform: scale(1.08); box-shadow: 0 6px 28px rgba(167,139,250,0.5); }
         .ai-chat-btn.pulse { animation: aiPulse 2s infinite; }
-        @keyframes aiPulse { 0%,100%{box-shadow:0 4px 20px rgba(102,126,234,0.4)} 50%{box-shadow:0 4px 32px rgba(102,126,234,0.65)} }
-
+        @keyframes aiPulse {
+            0%,100% { box-shadow: 0 4px 20px var(--purple-glow); }
+            50% { box-shadow: 0 4px 36px rgba(167,139,250,0.5); }
+        }
         .ai-chat-panel {
             position: fixed; bottom: 96px; right: 24px; z-index: 9999;
             width: 400px; max-width: calc(100vw - 40px); height: 560px; max-height: calc(100vh - 140px);
-            background: #1a1a2e; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1);
+            background: #12122a; border-radius: 16px; border: 1px solid var(--border);
             display: none; flex-direction: column; overflow: hidden;
             box-shadow: 0 8px 40px rgba(0,0,0,0.5);
         }
         .ai-chat-panel.open { display: flex; }
         .ai-chat-header {
-            padding: 16px 20px; background: rgba(102,126,234,0.1);
-            border-bottom: 1px solid rgba(255,255,255,0.08);
+            padding: 16px 20px; background: rgba(102,126,234,0.08);
+            border-bottom: 1px solid var(--border);
             display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
         }
         .ai-chat-header-left { display: flex; align-items: center; gap: 10px; }
         .ai-chat-header-icon { font-size: 1.3rem; }
-        .ai-chat-header-title { font-weight: 700; font-size: 0.95rem; color: #a78bfa; }
-        .ai-chat-header-sub { font-size: 0.7rem; color: #888; }
-        .ai-chat-close { background: none; border: none; color: #666; font-size: 1.2rem; cursor: pointer; padding: 4px 8px; border-radius: 6px; }
-        .ai-chat-close:hover { background: rgba(255,255,255,0.05); color: #ccc; }
+        .ai-chat-header-title { font-weight: 700; font-size: 0.95rem; color: var(--purple); }
+        .ai-chat-header-sub { font-size: 0.7rem; color: var(--text-muted); }
+        .ai-chat-close, .ai-chat-settings-btn {
+            background: none; border: none; color: var(--text-muted);
+            font-size: 1.2rem; cursor: pointer; padding: 4px 8px; border-radius: 6px;
+        }
+        .ai-chat-close:hover, .ai-chat-settings-btn:hover {
+            background: rgba(255,255,255,0.05); color: #ccc;
+        }
         .ai-chat-header-actions { display: flex; gap: 6px; align-items: center; }
-        .ai-chat-settings-btn { background: none; border: none; color: #555; font-size: 0.95rem; cursor: pointer; padding: 4px 8px; border-radius: 6px; }
-        .ai-chat-settings-btn:hover { background: rgba(255,255,255,0.05); color: #a78bfa; }
-
         .ai-chat-messages {
             flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px;
             scroll-behavior: smooth;
         }
         .ai-chat-messages::-webkit-scrollbar { width: 4px; }
-        .ai-chat-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
-
+        .ai-chat-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
         .ai-msg { max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 0.83rem; line-height: 1.6; animation: msgIn 0.3s ease; }
-        @keyframes msgIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-        .ai-msg.user { align-self: flex-end; background: rgba(102,126,234,0.25); color: #eee; border-bottom-right-radius: 4px; }
-        .ai-msg.assistant { align-self: flex-start; background: rgba(255,255,255,0.05); color: #ddd; border-bottom-left-radius: 4px; }
-        .ai-msg.system { align-self: center; background: transparent; color: #777; font-size: 0.75rem; text-align: center; max-width: 90%; }
-        .ai-msg.typing { align-self: flex-start; background: rgba(255,255,255,0.03); color: #777; font-style: italic; font-size: 0.78rem; }
-
-        .ai-chat-suggestions { padding: 8px 16px; display: flex; gap: 8px; flex-wrap: wrap; border-top: 1px solid rgba(255,255,255,0.05); flex-shrink: 0; }
-        .ai-suggest-chip { padding: 5px 14px; border-radius: 999px; font-size: 0.75rem; cursor: pointer; background: rgba(102,126,234,0.1); border: 1px solid rgba(102,126,234,0.2); color: #a78bfa; transition: all 0.2s; white-space: nowrap; }
-        .ai-suggest-chip:hover { background: rgba(102,126,234,0.3); color: #fff; border-color: rgba(102,126,234,0.4); }
-
-        .ai-chat-input-area { padding: 12px 16px; border-top: 1px solid rgba(255,255,255,0.06); display: flex; gap: 8px; align-items: flex-end; flex-shrink: 0; }
-        .ai-chat-input { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #eee; padding: 10px 14px; border-radius: 10px; font-size: 0.85rem; font-family: inherit; outline: none; resize: none; max-height: 80px; transition: border-color 0.2s; }
+        @keyframes msgIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .ai-msg.user { align-self: flex-end; background: rgba(102,126,234,0.2); color: #eee; border-bottom-right-radius: 4px; }
+        .ai-msg.assistant { align-self: flex-start; background: rgba(255,255,255,0.04); color: #ddd; border-bottom-left-radius: 4px; }
+        .ai-msg.system { align-self: center; background: transparent; color: var(--text-muted); font-size: 0.75rem; text-align: center; max-width: 90%; }
+        .ai-msg.typing { align-self: flex-start; background: rgba(255,255,255,0.03); color: var(--text-muted); font-style: italic; font-size: 0.78rem; }
+        .ai-chat-suggestions { padding: 8px 16px; display: flex; gap: 8px; flex-wrap: wrap; border-top: 1px solid var(--border); flex-shrink: 0; }
+        .ai-suggest-chip { padding: 5px 14px; border-radius: 999px; font-size: 0.75rem; cursor: pointer; background: rgba(102,126,234,0.1); border: 1px solid rgba(102,126,234,0.2); color: var(--purple); transition: all 0.2s; white-space: nowrap; }
+        .ai-suggest-chip:hover { background: rgba(102,126,234,0.25); color: #fff; border-color: rgba(102,126,234,0.4); }
+        .ai-chat-input-area { padding: 12px 16px; border-top: 1px solid var(--border); display: flex; gap: 8px; align-items: flex-end; flex-shrink: 0; }
+        .ai-chat-input { flex: 1; background: rgba(255,255,255,0.04); border: 1px solid var(--border); color: #eee; padding: 10px 14px; border-radius: 10px; font-size: 0.85rem; font-family: inherit; outline: none; resize: none; max-height: 80px; transition: border-color 0.2s; }
         .ai-chat-input:focus { border-color: rgba(102,126,234,0.4); }
-        .ai-chat-input::placeholder { color: #555; }
-        .ai-chat-send { flex-shrink: 0; width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg,#667eea,#764ba2); color: #fff; border: none; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: opacity 0.2s; }
+        .ai-chat-input::placeholder { color: var(--text-muted); }
+        .ai-chat-send { flex-shrink: 0; width: 40px; height: 40px; border-radius: 50%; background: var(--grad-main); color: #fff; border: none; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: opacity 0.2s; }
         .ai-chat-send:hover { opacity: 0.85; }
         .ai-chat-send:disabled { opacity: 0.3; cursor: not-allowed; }
-
         .ai-setup-overlay { position: fixed; inset: 0; z-index: 99999; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; }
-        .ai-setup-dialog { background: #1a1a2e; border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 32px; width: 420px; max-width: 90vw; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
-        .ai-setup-dialog h3 { color: #a78bfa; font-size: 1.1rem; margin-bottom: 6px; }
+        .ai-setup-dialog { background: #12122a; border: 1px solid var(--border); border-radius: 16px; padding: 32px; width: 420px; max-width: 90vw; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+        .ai-setup-dialog h3 { color: var(--purple); font-size: 1.1rem; margin-bottom: 6px; }
         .ai-setup-dialog .desc { color: #aaa; font-size: 0.8rem; margin-bottom: 20px; line-height: 1.5; }
-        .ai-setup-dialog input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #eee; padding: 10px 14px; border-radius: 8px; font-size: 0.85rem; outline: none; font-family: monospace; margin-bottom: 12px; }
-        .ai-setup-dialog input:focus { border-color: #a78bfa; }
+        .ai-setup-dialog input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: #eee; padding: 10px 14px; border-radius: 8px; font-size: 0.85rem; outline: none; font-family: monospace; margin-bottom: 12px; }
+        .ai-setup-dialog input:focus { border-color: var(--purple); }
         .ai-setup-dialog .setup-actions { display: flex; gap: 10px; }
         .ai-setup-dialog button { flex: 1; padding: 10px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer; border: none; }
-        .ai-setup-btn-primary { background: linear-gradient(135deg,#667eea,#764ba2); color: #fff; }
+        .ai-setup-btn-primary { background: var(--grad-main); color: #fff; }
         .ai-setup-btn-secondary { background: transparent; border: 1px solid rgba(255,255,255,0.15); color: #aaa; border-radius: 8px; }
-        .ai-setup-dialog .hint { margin-top: 14px; font-size: 0.72rem; color: #777; line-height: 1.5; }
-        .ai-setup-dialog .hint a { color: #a78bfa; text-decoration: underline; }
+        .ai-setup-dialog .hint { margin-top: 14px; font-size: 0.72rem; color: var(--text-muted); line-height: 1.5; }
+        .ai-setup-dialog .hint a { color: var(--purple); text-decoration: underline; }
         .ai-setup-dialog .error { color: #ef4444; font-size: 0.78rem; margin-top: 6px; display: none; }
-        .ai-status-bar { padding: 4px 16px; font-size: 0.65rem; color: #666; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); flex-shrink: 0; display: none; }
+        .ai-status-bar { padding: 4px 16px; font-size: 0.65rem; color: var(--text-muted); text-align: center; border-bottom: 1px solid var(--border); flex-shrink: 0; display: none; }
         .ai-status-bar.connected { color: #10b981; display: block; }
-        .ai-status-bar.disconnected { color: #888; display: block; }
+        .ai-status-bar.disconnected { color: var(--text-muted); display: block; }
 
-        @media (max-width: 480px) {
-            .ai-chat-panel { width: calc(100vw - 16px); height: 480px; right: 8px; bottom: 80px; border-radius: 12px; }
-            .ai-chat-btn { width: 48px; height: 48px; font-size: 20px; bottom: 16px; right: 16px; }
-        }
-
-        /* ── 开发者入口（极度隐蔽）── */
+        /* ── 开发者入口 ── */
         .dev-link {
             position: fixed; bottom: 8px; left: 14px; z-index: 9997;
-            font-size: 13px; color: #555; cursor: default; user-select: none;
+            font-size: 13px; color: #3a3a50; cursor: default; user-select: none;
             padding: 4px 10px; border-radius: 4px; transition: color 0.3s;
         }
-        .dev-link:hover { color: #999; }
-        .dev-link.visible { color: #aaa; cursor: pointer; }
-        .dev-link.visible:hover { color: #a78bfa; }
-
-        /* ── 密码弹窗 ── */
+        .dev-link:hover { color: #5a5a70; }
+        .dev-link.visible { color: #888; cursor: pointer; }
+        .dev-link.visible:hover { color: var(--purple); }
         .pw-overlay {
             position: fixed; inset: 0; z-index: 99999;
             background: rgba(5,5,20,0.92); backdrop-filter: blur(8px);
             display: flex; align-items: center; justify-content: center;
         }
         .pw-dialog {
-            background: #1a1a2e; border: 1px solid rgba(255,255,255,0.1);
+            background: #12122a; border: 1px solid var(--border);
             border-radius: 16px; padding: 40px 36px; width: 380px; max-width: 90vw;
             text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.5);
         }
         .pw-dialog .pw-icon { font-size: 40px; margin-bottom: 12px; }
         .pw-dialog h3 { color: #eee; font-size: 1.2rem; margin-bottom: 6px; }
-        .pw-dialog p { color: #777; font-size: 0.8rem; margin-bottom: 24px; }
+        .pw-dialog p { color: var(--text-muted); font-size: 0.8rem; margin-bottom: 24px; }
         .pw-dialog input {
             width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12);
             color: #eee; padding: 12px 16px; border-radius: 10px; font-size: 1rem;
             text-align: center; letter-spacing: 4px; outline: none; margin-bottom: 12px;
             transition: border-color 0.2s;
         }
-        .pw-dialog input:focus { border-color: #a78bfa; }
+        .pw-dialog input:focus { border-color: var(--purple); }
         .pw-dialog .pw-error { color: #ef4444; font-size: 0.78rem; margin-bottom: 8px; display: none; }
         .pw-dialog button {
             width: 100%; padding: 12px; border-radius: 10px; font-weight: 600;
-            font-size: 0.9rem; cursor: pointer; border: none; transition: all 0.2s;
-            background: linear-gradient(135deg,#667eea,#764ba2); color: #fff;
+            font-size: 0.9rem; cursor: pointer; border: none;
+            background: var(--grad-main); color: #fff;
+            transition: all var(--transition);
         }
         .pw-dialog button:hover { opacity: 0.9; transform: translateY(-1px); }
-        .pw-dialog .pw-hint { margin-top: 16px; font-size: 0.7rem; color: #555; }
+        .pw-dialog .pw-hint { margin-top: 16px; font-size: 0.7rem; color: #444; }
+
+        /* ── 响应式 ── */
+        @media (max-width: 900px) {
+            .features-grid { grid-template-columns: repeat(2, 1fr); }
+            .workflow-grid { grid-template-columns: repeat(2, 1fr); }
+            .track-grid { grid-template-columns: repeat(3, 1fr); }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .nav-links { display: none; }
+            .hero { padding: 100px 0 60px; }
+        }
+        @media (max-width: 600px) {
+            .features-grid, .workflow-grid, .track-grid { grid-template-columns: 1fr; }
+            .stats-grid { grid-template-columns: 1fr 1fr; gap: 20px; }
+            .hero h1 { font-size: 1.8rem; }
+            .hero-btns { flex-direction: column; align-items: center; }
+            .ai-chat-panel { width: calc(100vw - 16px); height: 480px; right: 8px; bottom: 80px; border-radius: 12px; }
+            .ai-chat-btn { width: 48px; height: 48px; font-size: 20px; bottom: 16px; right: 16px; }
+        }
     </style>
 </head>
 <body>
 
-    <div class="logo">📚</div>
-    <h1>阅流 · 书星</h1>
-    <p class="subtitle">图书数字人短视频 · 全自动生产 · 多平台分发 · 自动分账</p>
+<div class="ambient-bg"></div>
+<div class="stars" id="stars"></div>
 
-    <div class="cards">
-        <a href="creator.html" class="card card-creator">
-            <div class="card-icon">🎬</div>
-            <h2>创作者中心</h2>
-            <p>AI 生成口播脚本<br>认领图书推广任务<br>上传视频赚收益</p>
+<!-- ══════ 导航栏 ══════ -->
+<nav class="nav" id="navbar">
+    <div class="nav-inner">
+        <a href="index.html" class="nav-logo">
+            <span class="logo-icon">📚</span>
+            <span>阅流·书星</span>
         </a>
+        <div class="nav-links">
+            <a href="#features">核心功能</a>
+            <a href="#workflow">工作流程</a>
+            <a href="#tracks">内容赛道</a>
+            <a href="creator.html">创作者中心</a>
+        </div>
+        <a href="creator.html" class="nav-cta">开始创作</a>
     </div>
+</nav>
 
-    <div class="footer">© 2026 阅流·书星 — 让每一本好书都能被看见</div>
+<!-- ══════ 英雄区 ══════ -->
+<section class="hero">
+    <div class="container">
+        <div class="hero-badge">✦ AI 驱动 · 图书推广全自动</div>
+        <h1>一本书 + 一条AI视频<br>就能帮你赚钱</h1>
+        <p class="subtitle">
+            选书、生成脚本文案、AI数字人出镜、多平台自动分发——<br>
+            阅流·书星一站式搞定，你只管收佣金
+        </p>
+        <div class="hero-btns">
+            <a href="creator.html" class="btn btn-primary">🚀 免费开始创作</a>
+            <a href="#features" class="btn btn-outline">了解更多</a>
+        </div>
+    </div>
+</section>
 
-    <!-- 开发者入口（隐藏，点击3次才触发） -->
-    <div class="dev-link" id="devLink">⚙</div>
+<!-- ══════ 数据统计 ══════ -->
+<section class="stats-section">
+    <div class="container">
+        <div class="stats-grid">
+            <div class="stat-item reveal">
+                <div class="stat-num" id="stat-books">5+</div>
+                <div class="stat-label">内容赛道</div>
+            </div>
+            <div class="stat-item reveal">
+                <div class="stat-num" id="stat-platforms">3+</div>
+                <div class="stat-label">分发平台</div>
+            </div>
+            <div class="stat-item reveal">
+                <div class="stat-num">¥0</div>
+                <div class="stat-label">免费使用</div>
+            </div>
+            <div class="stat-item reveal">
+                <div class="stat-num">24h</div>
+                <div class="stat-label">自动化运行</div>
+            </div>
+        </div>
+    </div>
+</section>
 
-    <!-- ====== AI创作助手浮窗 ====== -->
-    <div class="ai-chat-btn" id="ai-chat-btn" title="AI创作助手">🤖</div>
-    <div class="ai-chat-panel" id="ai-chat-panel">
-        <div class="ai-chat-header">
-            <div class="ai-chat-header-left">
-                <span class="ai-chat-header-icon">✨</span>
-                <div>
-                    <div class="ai-chat-header-title">AI 创作助手</div>
-                    <div class="ai-chat-header-sub">DeepSeek · 文案生成</div>
+<!-- ══════ 核心功能 ══════ -->
+<section class="section" id="features">
+    <div class="container">
+        <div class="section-header reveal">
+            <h2>六大核心能力，图书带货全闭环</h2>
+            <p>从选题到分发，AI 帮你完成每一个环节</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card reveal">
+                <div class="feature-icon">🤖</div>
+                <h3>AI 脚本生成</h3>
+                <p>输入书名，DeepSeek 自动生成爆款口播文案，30秒抓人眼球</p>
+            </div>
+            <div class="feature-card reveal">
+                <div class="feature-icon">🎬</div>
+                <h3>数字人视频</h3>
+                <p>AI 数字人出镜念稿，自动合成带货短视频，无需真人拍摄</p>
+            </div>
+            <div class="feature-card reveal">
+                <div class="feature-icon">📡</div>
+                <h3>多平台分发</h3>
+                <p>一键同步抖音、快手、视频号，挂载图书链接，全渠道曝光</p>
+            </div>
+            <div class="feature-card reveal">
+                <div class="feature-icon">💰</div>
+                <h3>佣金自动结算</h3>
+                <p>对接淘宝联盟/抖客，出单自动分账，收益实时可查</p>
+            </div>
+            <div class="feature-card reveal">
+                <div class="feature-icon">📊</div>
+                <h3>数据看板</h3>
+                <p>播放量、转化率、佣金收入一目了然，优化你的带货策略</p>
+            </div>
+            <div class="feature-card reveal">
+                <div class="feature-icon">🔒</div>
+                <h3>隐私安全</h3>
+                <p>API Key 仅存本地浏览器，不上传服务器，你的数据你做主</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ══════ 工作流程 ══════ -->
+<section class="section" id="workflow" style="background:rgba(255,255,255,0.012);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+    <div class="container">
+        <div class="section-header reveal">
+            <h2>四步上手，轻松赚佣金</h2>
+            <p>零门槛、零成本，有手机就能做</p>
+        </div>
+        <div class="workflow-grid">
+            <div class="workflow-step reveal">
+                <div class="workflow-num">1</div>
+                <h4>注册 & 选择赛道</h4>
+                <p>免费注册，选择你擅长或感兴趣的图书品类</p>
+                <span class="workflow-arrow">→</span>
+            </div>
+            <div class="workflow-step reveal">
+                <div class="workflow-num">2</div>
+                <h4>认领图书任务</h4>
+                <p>在任务大厅挑选出版社发的高佣金图书</p>
+                <span class="workflow-arrow">→</span>
+            </div>
+            <div class="workflow-step reveal">
+                <div class="workflow-num">3</div>
+                <h4>AI 自动生成视频</h4>
+                <p>AI 写文 + 数字人出镜，一键产出带货短视频</p>
+                <span class="workflow-arrow">→</span>
+            </div>
+            <div class="workflow-step reveal">
+                <div class="workflow-num">4</div>
+                <h4>分发 & 赚佣金</h4>
+                <p>多平台自动发布，有人下单你就有收入</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ══════ 内容赛道 ══════ -->
+<section class="section" id="tracks">
+    <div class="container">
+        <div class="section-header reveal">
+            <h2>五大内容赛道，总有你的主场</h2>
+            <p>每个赛道都有专属的 AI 文案风格和推广策略</p>
+        </div>
+        <div class="track-grid">
+            <div class="track-card reveal">
+                <div class="track-icon">🧒</div>
+                <h4>少儿童书</h4>
+                <p>温馨教育·家长共鸣</p>
+            </div>
+            <div class="track-card reveal">
+                <div class="track-icon">💼</div>
+                <h4>职场成长</h4>
+                <p>干货实操·痛点解决</p>
+            </div>
+            <div class="track-card reveal">
+                <div class="track-icon">💛</div>
+                <h4>心理疗愈</h4>
+                <p>温暖治愈·金句频出</p>
+            </div>
+            <div class="track-card reveal">
+                <div class="track-icon">📖</div>
+                <h4>文学经典</h4>
+                <p>深度情怀·激发阅读欲</p>
+            </div>
+            <div class="track-card reveal">
+                <div class="track-icon">🌟</div>
+                <h4>综合品类</h4>
+                <p>生活百科·全品类覆盖</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ══════ CTA ══════ -->
+<section class="cta-section">
+    <div class="container">
+        <h2 class="reveal">准备好开启你的图书带货之旅了吗？</h2>
+        <p class="reveal">免费注册，AI 替你写文案、做视频、发平台，佣金自动到账</p>
+        <div class="hero-btns reveal">
+            <a href="creator.html" class="btn btn-primary">🎬 进入创作者中心</a>
+            <a href="#features" class="btn btn-outline">查看全部功能</a>
+        </div>
+    </div>
+</section>
+
+<!-- ══════ 页脚 ══════ -->
+<footer class="footer">
+    <div class="container">
+        <div class="footer-links">
+            <a href="creator.html">创作者中心</a>
+            <a href="#features">核心功能</a>
+            <a href="#workflow">工作流程</a>
+            <a href="#tracks">内容赛道</a>
+        </div>
+        <p>© 2026 阅流·书星 — AI 驱动的图书推广短视频全自动平台</p>
+        <p>让每一本好书都能被看见 · 永久免费使用</p>
+    </div>
+</footer>
+
+<!-- ══════ 开发者入口（左下角隐藏） ══════ -->
+<div class="dev-link" id="devLink">⚙</div>
+
+<!-- ══════ AI创作助手浮窗 ══════ -->
+<div class="ai-chat-btn" id="ai-chat-btn" title="AI创作助手">🤖</div>
+<div class="ai-chat-panel" id="ai-chat-panel">
+    <div class="ai-chat-header">
+        <div class="ai-chat-header-left">
+            <span class="ai-chat-header-icon">✨</span>
+            <div>
+                <div class="ai-chat-header-title">AI 创作助手</div>
+                <div class="ai-chat-header-sub">DeepSeek · 文案生成</div>
+            </div>
+        </div>
+        <div class="ai-chat-header-actions">
+            <button class="ai-chat-settings-btn" id="ai-chat-settings" title="设置API Key">⚙️</button>
+            <button class="ai-chat-close" id="ai-chat-close">✕</button>
+        </div>
+    </div>
+    <div class="ai-status-bar" id="ai-status-bar"></div>
+    <div class="ai-chat-messages" id="ai-chat-messages"></div>
+    <div class="ai-chat-suggestions" id="ai-chat-suggestions"></div>
+    <div class="ai-chat-input-area">
+        <textarea class="ai-chat-input" id="ai-chat-input" placeholder="输入你的创作需求..." rows="1"></textarea>
+        <button class="ai-chat-send" id="ai-chat-send">➤</button>
+    </div>
+</div>
+
+<script>
+(function () {
+    'use strict';
+
+    // ── 星空背景 ──
+    const starsEl = document.getElementById('stars');
+    for (let i = 0; i < 80; i++) {
+        const star = document.createElement('div');
+        star.className = 'star';
+        const size = Math.random() * 2.5 + 1;
+        star.style.cssText = `
+            width:${size}px;height:${size}px;
+            left:${Math.random()*100}%;top:${Math.random()*100}%;
+            --dur:${Math.random()*3+2}s;
+            --delay:${Math.random()*4}s;
+            --min:${Math.random()*0.3+0.1};
+        `;
+        starsEl.appendChild(star);
+    }
+
+    // ── 导航栏滚动效果 ──
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+        navbar.classList.toggle('scrolled', window.scrollY > 50);
+    });
+
+    // ── 滚动入场动画 ──
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    // ── 数字滚动动画 ──
+    function animateCounter(el, target, suffix) {
+        const duration = 1500;
+        const start = performance.now();
+        const initialText = el.textContent;
+        function update(now) {
+            const elapsed = now - start;
+            const progress = Math.min(elapsed / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            el.textContent = Math.floor(eased * target) + (suffix || '');
+            if (progress < 1) requestAnimationFrame(update);
+            else el.textContent = target + (suffix || '');
+        }
+        requestAnimationFrame(update);
+    }
+    const statObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const el = entry.target;
+                if (el.id === 'stat-books') animateCounter(el, 5, '+');
+                if (el.id === 'stat-platforms') animateCounter(el, 3, '+');
+                statObserver.unobserve(el);
+            }
+        });
+    }, { threshold: 0.5 });
+    document.querySelectorAll('.stat-num[id]').forEach(el => statObserver.observe(el));
+
+    // ══════ AI聊天浮窗 ══════
+    const btn = document.getElementById('ai-chat-btn');
+    const panel = document.getElementById('ai-chat-panel');
+    const closeBtn = document.getElementById('ai-chat-close');
+    const settingsBtn = document.getElementById('ai-chat-settings');
+    const msgArea = document.getElementById('ai-chat-messages');
+    const suggestionsEl = document.getElementById('ai-chat-suggestions');
+    const input = document.getElementById('ai-chat-input');
+    const sendBtn = document.getElementById('ai-chat-send');
+    const statusBar = document.getElementById('ai-status-bar');
+    const STORAGE_KEY = 'yueliu_deepseek_api_key';
+
+    function getApiKey() { return localStorage.getItem(STORAGE_KEY); }
+    function setApiKey(key) { localStorage.setItem(STORAGE_KEY, key); updateStatus(); }
+    function hasApiKey() { return !!getApiKey(); }
+
+    function updateStatus() {
+        if (hasApiKey()) {
+            statusBar.className = 'ai-status-bar connected';
+            statusBar.textContent = '● AI已连接 · DeepSeek-V3';
+        } else {
+            statusBar.className = 'ai-status-bar disconnected';
+            statusBar.textContent = '○ 未配置API Key · 点击 ⚙️ 设置';
+        }
+    }
+
+    function showSetup(callback) {
+        const overlay = document.createElement('div');
+        overlay.className = 'ai-setup-overlay';
+        overlay.innerHTML = `
+            <div class="ai-setup-dialog">
+                <h3>⚡ 配置 AI 引擎</h3>
+                <div class="desc">输入你的DeepSeek API Key即可启用智能创作助手。<br>Key仅存储在您的浏览器中，不会上传至任何服务器。</div>
+                <input type="password" id="ai-api-key-input" placeholder="粘贴API Key（格式：sk-xxxxxxxxxxxxxxxx）">
+                <div class="error" id="ai-setup-error">API Key格式不正确（应以sk-开头）</div>
+                <div class="setup-actions">
+                    <button class="ai-setup-btn-secondary" id="ai-setup-skip">暂不配置</button>
+                    <button class="ai-setup-btn-primary" id="ai-setup-save">保存并启用</button>
+                </div>
+                <div class="hint">
+                    还没有Key？<a href="https://platform.deepseek.com/api_keys" target="_blank">点此免费获取 →</a><br>
+                    新用户注册即送500万token，deepseek-chat 免费调用。
                 </div>
             </div>
-            <div class="ai-chat-header-actions">
-                <button class="ai-chat-settings-btn" id="ai-chat-settings" title="设置API Key">⚙️</button>
-                <button class="ai-chat-close" id="ai-chat-close">✕</button>
-            </div>
-        </div>
-        <div class="ai-status-bar" id="ai-status-bar"></div>
-        <div class="ai-chat-messages" id="ai-chat-messages"></div>
-        <div class="ai-chat-suggestions" id="ai-chat-suggestions"></div>
-        <div class="ai-chat-input-area">
-            <textarea class="ai-chat-input" id="ai-chat-input" placeholder="输入你的创作需求..." rows="1"></textarea>
-            <button class="ai-chat-send" id="ai-chat-send">➤</button>
-        </div>
-    </div>
+        `;
+        document.body.appendChild(overlay);
+        const keyInput = overlay.querySelector('#ai-api-key-input');
+        const errEl = overlay.querySelector('#ai-setup-error');
+        overlay.querySelector('#ai-setup-skip').addEventListener('click', () => {
+            document.body.removeChild(overlay); if (callback) callback(false);
+        });
+        overlay.querySelector('#ai-setup-save').addEventListener('click', () => {
+            const key = keyInput.value.trim();
+            if (key.length < 20 || !key.startsWith('sk-')) { errEl.style.display = 'block'; return; }
+            setApiKey(key);
+            document.body.removeChild(overlay); if (callback) callback(true);
+        });
+        keyInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') overlay.querySelector('#ai-setup-save').click(); });
+        keyInput.focus();
+    }
 
-    <script>
-    (function () {
-        'use strict';
+    let chatHistory = [];
+    function resetChat() { chatHistory = []; msgArea.innerHTML = ''; }
+    function addMessage(role, text) {
+        const div = document.createElement('div');
+        div.className = 'ai-msg ' + role;
+        div.textContent = text;
+        msgArea.appendChild(div);
+        msgArea.scrollTop = msgArea.scrollHeight;
+        return div;
+    }
+    function showTyping() {
+        const div = document.createElement('div');
+        div.className = 'ai-msg typing'; div.id = 'typing-indicator';
+        div.textContent = 'AI正在创作...';
+        msgArea.appendChild(div);
+        msgArea.scrollTop = msgArea.scrollHeight;
+    }
+    function removeTyping() { const el = document.getElementById('typing-indicator'); if (el) el.remove(); }
+    function loadSuggestions() {
+        const list = ['帮我写一条童书推广文案','生成职场成长类书籍的短视频脚本','心理疗愈类书籍怎么带货？','写一条30秒的口播文案'];
+        suggestionsEl.innerHTML = list.map(s => `<button class="ai-suggest-chip">${s}</button>`).join('');
+        suggestionsEl.querySelectorAll('.ai-suggest-chip').forEach(chip => {
+            chip.addEventListener('click', () => { input.value = chip.textContent; input.focus(); });
+        });
+    }
 
-        const btn = document.getElementById('ai-chat-btn');
-        const panel = document.getElementById('ai-chat-panel');
-        const closeBtn = document.getElementById('ai-chat-close');
-        const settingsBtn = document.getElementById('ai-chat-settings');
-        const msgArea = document.getElementById('ai-chat-messages');
-        const suggestionsEl = document.getElementById('ai-chat-suggestions');
-        const input = document.getElementById('ai-chat-input');
-        const sendBtn = document.getElementById('ai-chat-send');
-        const statusBar = document.getElementById('ai-status-bar');
-
-        const STORAGE_KEY = 'yueliu_deepseek_api_key';
-
-        function getApiKey() { return localStorage.getItem(STORAGE_KEY); }
-        function setApiKey(key) { localStorage.setItem(STORAGE_KEY, key); updateStatus(); }
-        function hasApiKey() { return !!getApiKey(); }
-
-        function updateStatus() {
-            if (hasApiKey()) {
-                statusBar.className = 'ai-status-bar connected';
-                statusBar.textContent = '● AI已连接 · DeepSeek-V3';
-            } else {
-                statusBar.className = 'ai-status-bar disconnected';
-                statusBar.textContent = '○ 未配置API Key · 点击 ⚙️ 设置';
-            }
+    async function callDeepSeekAPI(apiKey, messages) {
+        const systemMsg = `你是"阅流·书星"平台的AI创作助手，专门帮助创作者生成图书推广文案和短视频脚本。\n\n你的能力：\n1. 根据书名和赛道，生成爆款短视频口播文案（30秒/60秒）\n2. 为图书推广撰写吸引人的标题和简介\n3. 提供各赛道（童书、职场、心理、文学、综合）的带货话术\n4. 分析图书卖点，提炼金句\n\n规则：\n- 文案要口语化、有感染力，适合短视频口播\n- 开头3秒要抓人眼球（用悬念、反常识、情感共鸣）\n- 童书赛道：温馨、有教育意义、戳中家长痛点\n- 职场赛道：干货感、紧迫感、解决实际痛点\n- 心理赛道：温暖治愈、情感共鸣、金句频出\n- 文学赛道：有深度、有情怀、激发阅读欲\n- 结尾一定要有明确的行动号召（CTA）\n- 用中文回复，控制在300字以内`;
+        const res = await fetch('https://api.deepseek.com/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+            body: JSON.stringify({
+                model: 'deepseek-chat',
+                messages: [{ role: 'system', content: systemMsg }, ...messages.filter(m => m.role !== 'system').slice(-10)],
+                temperature: 0.8, max_tokens: 1000,
+            }),
+        });
+        if (!res.ok) {
+            if (res.status === 401 || res.status === 403) throw new Error('API Key无效或已过期，请重新设置');
+            if (res.status === 429) throw new Error('API调用频率过高，请稍后再试');
+            if (res.status === 402) throw new Error('账户余额不足，请充值后再试');
+            throw new Error('AI服务异常（' + res.status + '），请稍后重试');
         }
+        const data = await res.json();
+        return data.choices?.[0]?.message?.content || '（AI返回为空，请重试）';
+    }
 
-        function showSetup(callback) {
+    function fallbackReply(userMsg) {
+        if (userMsg.includes('文案') || userMsg.includes('脚本') || userMsg.includes('推广')) {
+            return '📝 图书推广文案建议：\n\n1. 开头用悬念或痛点切入\n2. 中间讲书的核心卖点+读者感受\n3. 结尾号召行动\n\n💡 点击右上角 ⚙️ 配置DeepSeek API Key即可让AI自动生成！';
+        }
+        const replies = [
+            '好主意！图书带货的核心是"真诚推荐+场景共鸣"。进入创作者中心可以认领任务、生成文案。',
+            '创作文案的关键：先确定目标读者是谁、他们的痛点是什么、这本书如何解决它。',
+            '爆款文案公式：痛点引入 → 书中解法 → 个人感受 → 行动号召。',
+            '图书推广的精髓在于"种草"而非"硬推"——分享你的真实阅读感受，读者自然会想买。',
+        ];
+        return replies[Math.floor(Math.random() * replies.length)] + '\n\n💡 配置DeepSeek API Key即可解锁AI智能文案生成。';
+    }
+
+    async function sendMessage() {
+        const text = input.value.trim(); if (!text) return;
+        input.value = ''; input.style.height = 'auto'; sendBtn.disabled = true;
+        addMessage('user', text); chatHistory.push({ role: 'user', content: text });
+        showTyping();
+        try {
+            const apiKey = getApiKey(); let reply;
+            if (apiKey) { reply = await callDeepSeekAPI(apiKey, chatHistory); }
+            else { removeTyping(); await new Promise(r => setTimeout(r, 600)); reply = fallbackReply(text); showTyping(); await new Promise(r => setTimeout(r, 300)); }
+            removeTyping(); addMessage('assistant', reply);
+            chatHistory.push({ role: 'assistant', content: reply });
+        } catch (e) {
+            removeTyping();
+            addMessage('system', '⚠️ ' + (e.message || '出了点问题'));
+            if ((e.message || '').includes('API Key')) addMessage('system', '点击右上角 ⚙️ 重新设置');
+        }
+        sendBtn.disabled = false; input.focus();
+    }
+
+    function openChat() {
+        if (!hasApiKey()) {
+            resetChat();
+            addMessage('system', '👋 欢迎使用 AI 创作助手！');
+            addMessage('system', '首次使用需要配置DeepSeek API Key（免费注册，新用户送500万token）。');
+            showSetup((configured) => {
+                if (configured) {
+                    resetChat();
+                    addMessage('assistant', '✨ AI引擎已就绪！我是阅流·书星的 AI 创作助手（DeepSeek驱动）。\n\n我可以帮你：\n📝 生成图书推广文案\n🎬 撰写短视频口播脚本\n💡 提炼图书卖点和金句\n🔥 各赛道带货话术\n\n直接告诉我书名和赛道，我来帮你创作！');
+                    loadSuggestions(); panel.classList.add('open'); btn.style.display = 'none'; input.focus();
+                } else {
+                    addMessage('assistant', '好的，暂时使用离线模式。随时点击 ⚙️ 图标配置API Key解锁完整AI能力。');
+                    loadSuggestions(); panel.classList.add('open'); btn.style.display = 'none'; input.focus();
+                }
+            }); return;
+        }
+        panel.classList.add('open'); btn.style.display = 'none';
+        if (msgArea.children.length === 0) {
+            addMessage('assistant', '✨ 你好！我是阅流·书星的 AI 创作助手（DeepSeek驱动）。\n\n我可以帮你：\n📝 生成图书推广文案\n🎬 撰写短视频口播脚本\n💡 提炼图书卖点和金句\n🔥 各赛道带货话术\n\n直接告诉我书名和赛道，我来帮你创作！');
+            loadSuggestions();
+        }
+        input.focus();
+    }
+
+    btn.addEventListener('click', openChat);
+    closeBtn.addEventListener('click', () => { panel.classList.remove('open'); btn.style.display = 'flex'; });
+    settingsBtn.addEventListener('click', () => {
+        showSetup((configured) => { if (configured) { resetChat(); addMessage('assistant', '✅ API Key 已更新！DeepSeek创作引擎已就绪。'); loadSuggestions(); } });
+    });
+    sendBtn.addEventListener('click', sendMessage);
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
+    input.addEventListener('input', () => { input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight, 80) + 'px'; });
+    updateStatus();
+    setTimeout(() => btn.classList.add('pulse'), 5000);
+
+    // ══════ 开发者入口 ══════
+    (function() {
+        const devLink = document.getElementById('devLink');
+        let clickCount = 0, resetTimer = null;
+        devLink.addEventListener('click', function() {
+            clickCount++;
+            if (clickCount === 1) resetTimer = setTimeout(() => { clickCount = 0; devLink.classList.remove('visible'); }, 2000);
+            if (clickCount >= 2) devLink.classList.add('visible');
+            if (clickCount >= 3) {
+                clearTimeout(resetTimer); clickCount = 0; devLink.classList.remove('visible');
+                showDevPassword();
+            }
+        });
+        function showDevPassword() {
+            const DEV_PASSWORD = 'yueliu2026';
             const overlay = document.createElement('div');
-            overlay.className = 'ai-setup-overlay';
+            overlay.className = 'pw-overlay'; overlay.id = 'dev-pw-overlay';
             overlay.innerHTML = `
-                <div class="ai-setup-dialog">
-                    <h3>⚡ 配置 AI 引擎</h3>
-                    <div class="desc">输入你的DeepSeek API Key即可启用智能创作助手。<br>Key仅存储在您的浏览器中，不会上传至任何服务器。</div>
-                    <input type="password" id="ai-api-key-input" placeholder="粘贴API Key（格式：sk-xxxxxxxxxxxxxxxx）">
-                    <div class="error" id="ai-setup-error">API Key格式不正确（应以sk-开头）</div>
-                    <div class="setup-actions">
-                        <button class="ai-setup-btn-secondary" id="ai-setup-skip">暂不配置</button>
-                        <button class="ai-setup-btn-primary" id="ai-setup-save">保存并启用</button>
-                    </div>
-                    <div class="hint">
-                        还没有Key？<a href="https://platform.deepseek.com/api_keys" target="_blank">点此免费获取 →</a><br>
-                        新用户注册即送500万token，deepseek-chat 免费调用。
-                    </div>
+                <div class="pw-dialog">
+                    <div class="pw-icon">🔐</div>
+                    <h3>开发者验证</h3>
+                    <p>请输入后台管理密码</p>
+                    <input type="password" id="dev-pw-input" placeholder="输入密码" autocomplete="off">
+                    <div class="pw-error" id="dev-pw-error">密码错误，请重试</div>
+                    <button id="dev-pw-submit">进入后台</button>
+                    <div class="pw-hint">ESC 关闭</div>
                 </div>
             `;
             document.body.appendChild(overlay);
-
-            const keyInput = overlay.querySelector('#ai-api-key-input');
-            const errEl = overlay.querySelector('#ai-setup-error');
-
-            overlay.querySelector('#ai-setup-skip').addEventListener('click', () => {
-                document.body.removeChild(overlay);
-                if (callback) callback(false);
+            const pwInput = overlay.querySelector('#dev-pw-input');
+            const pwError = overlay.querySelector('#dev-pw-error');
+            overlay.querySelector('#dev-pw-submit').addEventListener('click', () => {
+                if (pwInput.value === DEV_PASSWORD) {
+                    document.body.removeChild(overlay);
+                    window.location.href = 'publisher.html';
+                } else { pwError.style.display = 'block'; pwInput.value = ''; pwInput.focus(); }
             });
-
-            overlay.querySelector('#ai-setup-save').addEventListener('click', () => {
-                const key = keyInput.value.trim();
-                if (key.length < 20 || !key.startsWith('sk-')) {
-                    errEl.style.display = 'block';
-                    return;
-                }
-                setApiKey(key);
-                document.body.removeChild(overlay);
-                if (callback) callback(true);
+            pwInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') overlay.querySelector('#dev-pw-submit').click();
+                if (e.key === 'Escape') document.body.removeChild(overlay);
             });
-
-            keyInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') overlay.querySelector('#ai-setup-save').click();
-            });
-            keyInput.focus();
+            overlay.addEventListener('click', (e) => { if (e.target === overlay) document.body.removeChild(overlay); });
+            setTimeout(() => pwInput.focus(), 100);
         }
-
-        let chatHistory = [];
-        function resetChat() { chatHistory = []; msgArea.innerHTML = ''; }
-
-        function addMessage(role, text) {
-            const div = document.createElement('div');
-            div.className = 'ai-msg ' + role;
-            div.textContent = text;
-            msgArea.appendChild(div);
-            msgArea.scrollTop = msgArea.scrollHeight;
-            return div;
-        }
-
-        function showTyping() {
-            const div = document.createElement('div');
-            div.className = 'ai-msg typing';
-            div.id = 'typing-indicator';
-            div.textContent = 'AI正在创作...';
-            msgArea.appendChild(div);
-            msgArea.scrollTop = msgArea.scrollHeight;
-        }
-
-        function removeTyping() {
-            const el = document.getElementById('typing-indicator');
-            if (el) el.remove();
-        }
-
-        function loadSuggestions() {
-            const list = ['帮我写一条童书推广文案','生成职场成长类书籍的短视频脚本','心理疗愈类书籍怎么带货？','写一条30秒的口播文案'];
-            suggestionsEl.innerHTML = list.map(s => `<button class="ai-suggest-chip">${s}</button>`).join('');
-            suggestionsEl.querySelectorAll('.ai-suggest-chip').forEach(chip => {
-                chip.addEventListener('click', () => { input.value = chip.textContent; input.focus(); });
-            });
-        }
-
-        async function callDeepSeekAPI(apiKey, messages) {
-            const systemMsg = `你是"阅流·书星"平台的AI创作助手，专门帮助创作者生成图书推广文案和短视频脚本。\n\n你的能力：\n1. 根据书名和赛道，生成爆款短视频口播文案（30秒/60秒）\n2. 为图书推广撰写吸引人的标题和简介\n3. 提供各赛道（童书、职场、心理、文学、综合）的带货话术\n4. 分析图书卖点，提炼金句\n\n规则：\n- 文案要口语化、有感染力，适合短视频口播\n- 开头3秒要抓人眼球（用悬念、反常识、情感共鸣）\n- 童书赛道：温馨、有教育意义、戳中家长痛点\n- 职场赛道：干货感、紧迫感、解决实际痛点\n- 心理赛道：温暖治愈、情感共鸣、金句频出\n- 文学赛道：有深度、有情怀、激发阅读欲\n- 结尾一定要有明确的行动号召（CTA）\n- 用中文回复，控制在300字以内`;
-
-            const res = await fetch('https://api.deepseek.com/v1/chat/completions', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-                body: JSON.stringify({
-                    model: 'deepseek-chat',
-                    messages: [{ role: 'system', content: systemMsg }, ...messages.filter(m => m.role !== 'system').slice(-10)],
-                    temperature: 0.8, max_tokens: 1000,
-                }),
-            });
-
-            if (!res.ok) {
-                if (res.status === 401 || res.status === 403) throw new Error('API Key无效或已过期，请重新设置');
-                if (res.status === 429) throw new Error('API调用频率过高，请稍后再试');
-                if (res.status === 402) throw new Error('账户余额不足，请充值后再试');
-                throw new Error('AI服务异常（' + res.status + '），请稍后重试');
-            }
-
-            const data = await res.json();
-            return data.choices?.[0]?.message?.content || '（AI返回为空，请重试）';
-        }
-
-        function fallbackReply(userMsg) {
-            if (userMsg.includes('文案') || userMsg.includes('脚本') || userMsg.includes('推广')) {
-                return '📝 图书推广文案建议：\n\n1. 开头用悬念或痛点切入\n2. 中间讲书的核心卖点+读者感受\n3. 结尾号召行动\n\n💡 点击右上角 ⚙️ 配置DeepSeek API Key即可让AI自动生成！';
-            }
-            const replies = [
-                '好主意！图书带货的核心是"真诚推荐+场景共鸣"。进入创作者中心可以认领任务、生成文案。',
-                '创作文案的关键：先确定目标读者是谁、他们的痛点是什么、这本书如何解决它。',
-                '爆款文案公式：痛点引入 → 书中解法 → 个人感受 → 行动号召。',
-                '图书推广的精髓在于"种草"而非"硬推"——分享你的真实阅读感受，读者自然会想买。',
-            ];
-            return replies[Math.floor(Math.random() * replies.length)] + '\n\n💡 配置DeepSeek API Key即可解锁AI智能文案生成。';
-        }
-
-        async function sendMessage() {
-            const text = input.value.trim();
-            if (!text) return;
-            input.value = '';
-            input.style.height = 'auto';
-            sendBtn.disabled = true;
-
-            addMessage('user', text);
-            chatHistory.push({ role: 'user', content: text });
-            showTyping();
-
-            try {
-                const apiKey = getApiKey();
-                let reply;
-                if (apiKey) {
-                    reply = await callDeepSeekAPI(apiKey, chatHistory);
-                } else {
-                    removeTyping();
-                    await new Promise(r => setTimeout(r, 600));
-                    reply = fallbackReply(text);
-                    showTyping();
-                    await new Promise(r => setTimeout(r, 300));
-                }
-                removeTyping();
-                addMessage('assistant', reply);
-                chatHistory.push({ role: 'assistant', content: reply });
-            } catch (e) {
-                removeTyping();
-                const errMsg = e.message || '出了点问题';
-                addMessage('system', '⚠️ ' + errMsg);
-                if (errMsg.includes('API Key')) addMessage('system', '点击右上角 ⚙️ 重新设置');
-            }
-            sendBtn.disabled = false;
-            input.focus();
-        }
-
-        function openChat() {
-            if (!hasApiKey()) {
-                resetChat();
-                addMessage('system', '👋 欢迎使用 AI 创作助手！');
-                addMessage('system', '首次使用需要配置DeepSeek API Key（免费注册，新用户送500万token）。');
-                showSetup((configured) => {
-                    if (configured) {
-                        resetChat();
-                        addMessage('assistant', '✨ AI引擎已就绪！我是阅流·书星的 AI 创作助手（DeepSeek驱动）。\n\n我可以帮你：\n📝 生成图书推广文案\n🎬 撰写短视频口播脚本\n💡 提炼图书卖点和金句\n🔥 各赛道带货话术\n\n直接告诉我书名和赛道，我来帮你创作！');
-                        loadSuggestions();
-                        panel.classList.add('open');
-                        btn.style.display = 'none';
-                        input.focus();
-                    } else {
-                        addMessage('assistant', '好的，暂时使用离线模式。随时点击 ⚙️ 图标配置API Key解锁完整AI能力。');
-                        loadSuggestions();
-                        panel.classList.add('open');
-                        btn.style.display = 'none';
-                        input.focus();
-                    }
-                });
-                return;
-            }
-            panel.classList.add('open');
-            btn.style.display = 'none';
-            if (msgArea.children.length === 0) {
-                addMessage('assistant', '✨ 你好！我是阅流·书星的 AI 创作助手（DeepSeek驱动）。\n\n我可以帮你：\n📝 生成图书推广文案\n🎬 撰写短视频口播脚本\n💡 提炼图书卖点和金句\n🔥 各赛道带货话术\n\n直接告诉我书名和赛道，我来帮你创作！');
-                loadSuggestions();
-            }
-            input.focus();
-        }
-
-        btn.addEventListener('click', openChat);
-        closeBtn.addEventListener('click', () => { panel.classList.remove('open'); btn.style.display = 'flex'; });
-        settingsBtn.addEventListener('click', () => {
-            showSetup((configured) => {
-                if (configured) { resetChat(); addMessage('assistant', '✅ API Key 已更新！DeepSeek创作引擎已就绪。'); loadSuggestions(); }
-            });
-        });
-        sendBtn.addEventListener('click', sendMessage);
-        input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
-        input.addEventListener('input', () => { input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight, 80) + 'px'; });
-
-        updateStatus();
-        setTimeout(() => btn.classList.add('pulse'), 5000);
-
-        // ── 开发者入口：连续点击右下角"·"3次触发 ──
-        (function() {
-            const devLink = document.getElementById('devLink');
-            let clickCount = 0;
-            let resetTimer = null;
-
-            devLink.addEventListener('click', function() {
-                clickCount++;
-                if (clickCount === 1) {
-                    resetTimer = setTimeout(() => { clickCount = 0; devLink.classList.remove('visible'); }, 2000);
-                }
-                if (clickCount >= 2) {
-                    devLink.classList.add('visible');
-                }
-                if (clickCount >= 3) {
-                    clearTimeout(resetTimer);
-                    clickCount = 0;
-                    devLink.classList.remove('visible');
-                    showDevPassword();
-                }
-            });
-
-            function showDevPassword() {
-                const overlay = document.createElement('div');
-                overlay.className = 'pw-overlay';
-                overlay.id = 'dev-pw-overlay';
-                overlay.innerHTML = `
-                    <div class="pw-dialog">
-                        <div class="pw-icon">🔐</div>
-                        <h3>开发者验证</h3>
-                        <p>请输入后台管理密码</p>
-                        <input type="password" id="dev-pw-input" placeholder="输入密码" autocomplete="off">
-                        <div class="pw-error" id="dev-pw-error">密码错误，请重试</div>
-                        <button id="dev-pw-submit">进入后台</button>
-                        <div class="pw-hint">ESC 关闭</div>
-                    </div>
-                `;
-                document.body.appendChild(overlay);
-
-                const input = overlay.querySelector('#dev-pw-input');
-                const error = overlay.querySelector('#dev-pw-error');
-                const submitBtn = overlay.querySelector('#dev-pw-submit');
-
-                // 默认密码
-                const DEV_PASSWORD = 'yueliu2026';
-
-                submitBtn.addEventListener('click', () => {
-                    if (input.value === DEV_PASSWORD) {
-                        document.body.removeChild(overlay);
-                        window.location.href = 'publisher.html';
-                    } else {
-                        error.style.display = 'block';
-                        input.value = '';
-                        input.focus();
-                    }
-                });
-
-                input.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') submitBtn.click();
-                    if (e.key === 'Escape') document.body.removeChild(overlay);
-                });
-
-                overlay.addEventListener('click', (e) => {
-                    if (e.target === overlay) document.body.removeChild(overlay);
-                });
-
-                setTimeout(() => input.focus(), 100);
-            }
-        })();
     })();
-    </script>
+})();
+</script>
 
 </body>
 </html>
