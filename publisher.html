@@ -164,11 +164,11 @@
         <p>发布图书任务 · AI自动生成数字人短视频 · 多平台分发带货</p>
     </div>
 
-    <div class="tabs">
-        <div class="tab active" onclick="switchTab('publish', this)">📤 发布任务</div>
-        <div class="tab" onclick="switchTab('manage', this)">📋 任务管理</div>
-        <div class="tab" onclick="switchTab('stats', this)">📊 数据统计</div>
-        <div class="tab" onclick="switchTab('profit', this)">💰 盈利模式</div>
+    <div class="tabs" id="tabBar">
+        <div class="tab active" data-tab="publish">📤 发布任务</div>
+        <div class="tab" data-tab="manage">📋 任务管理</div>
+        <div class="tab" data-tab="stats">📊 数据统计</div>
+        <div class="tab" data-tab="profit">💰 盈利模式</div>
     </div>
 
     <div class="content">
@@ -340,6 +340,13 @@
 
         // ====== 初始化 ======
         function init() {
+            // 绑定标签点击事件
+            document.querySelectorAll("#tabBar .tab").forEach(tab => {
+                tab.addEventListener("click", function() {
+                    switchTab(this.dataset.tab, this);
+                });
+            });
+
             renderCategories();
             const saved = localStorage.getItem("publisher");
             if (saved) {

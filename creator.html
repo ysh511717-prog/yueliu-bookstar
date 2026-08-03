@@ -157,11 +157,11 @@
         <p>认领图书任务 · AI自动生成短视频 · 多平台分发带货赚佣金</p>
     </div>
 
-    <div class="tabs">
-        <div class="tab active" onclick="switchTab('generate', this)">🎬 生成脚本</div>
-        <div class="tab" onclick="switchTab('tasks', this)">📋 任务大厅</div>
-        <div class="tab" onclick="switchTab('works', this)">📹 我的作品</div>
-        <div class="tab" onclick="switchTab('bill', this)">💰 我的账单</div>
+    <div class="tabs" id="tabBar">
+        <div class="tab active" data-tab="generate">🎬 生成脚本</div>
+        <div class="tab" data-tab="tasks">📋 任务大厅</div>
+        <div class="tab" data-tab="works">📹 我的作品</div>
+        <div class="tab" data-tab="bill">💰 我的账单</div>
     </div>
 
     <div class="content">
@@ -268,6 +268,13 @@
 
         // ====== 初始化 ======
         function init() {
+            // 绑定标签点击事件（用 JS 绑定比 onclick 属性更可靠）
+            document.querySelectorAll("#tabBar .tab").forEach(tab => {
+                tab.addEventListener("click", function() {
+                    switchTab(this.dataset.tab, this);
+                });
+            });
+
             renderCategories();
             // 尝试从本地存储恢复创作者信息
             const saved = localStorage.getItem("creator");
