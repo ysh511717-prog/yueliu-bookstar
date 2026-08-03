@@ -10,7 +10,7 @@ import time
 import asyncio
 import logging
 from datetime import datetime, timedelta
-from contextlib import contextmanager
+from contextlib import contextmanager, asynccontextmanager
 from typing import Optional
 
 import requests
@@ -20,8 +20,12 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 # ---------- 环境变量 ----------
-from dotenv import load_dotenv
-load_dotenv()
+# Render 平台通过 Dashboard 设置环境变量，不需要 .env 文件
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except Exception:
+    pass
 
 DOUBAO_API_KEY = os.getenv("DOUBAO_API_KEY", "")
 COZE_WORKFLOW_ID = os.getenv("COZE_WORKFLOW_ID", "")
@@ -153,6 +157,20 @@ def init_db():
     logger.info("数据库初始化完成，5 张业务表 + 1 张订单表已就绪")
 
 
+# ---------- 生命周期 ----------
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """应用启动/关闭时的生命周期管理"""
+    try:
+        init_db()
+        logger.info("数据库初始化完成")
+    except Exception as e:
+        logger.error(f"数据库初始化失败: {e}")
+    asyncio.create_task(keepalive_loop())
+    logger.info("阅流·书星平台后端启动完成")
+    yield
+
+
 # ---------- FastAPI 应用 ----------
 app = FastAPI(
     title="阅流·书星平台 API",
@@ -160,6 +178,7 @@ app = FastAPI(
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
+    lifespan=lifespan,
 )
 
 # 允许所有来源跨域（GitHub Pages 前端需要）
@@ -762,25 +781,17 @@ async def list_orders(creator_id: Optional[int] = None):
 
 async def keepalive_loop():
     """每隔 10 分钟自动访问自身接口，最大程度减少休眠"""
-    if not BACKEND_URL:
-        logger.warning("未配置 BACKEND_URL，保活定时器未启动。请在环境变量中设置 BACKEND_URL")
+    if not BACKEND_URL or BACKEND_URL == "pending":
+        logger.warning("未配置有效的 BACKEND_URL，保活定时器未启动")
         return
 
     while True:
         await asyncio.sleep(600)  # 10 分钟
         try:
-            resp = requests.get(f"{BACKEND_URL}/api/keepalive", timeout=10)
+            resp = await asyncio.to_thread(requests.get, f"{BACKEND_URL}/api/keepalive", timeout=10)
             logger.info(f"[保活] 自检成功: {resp.status_code}")
         except Exception as e:
             logger.warning(f"[保活] 自检失败: {e}")
-
-
-@app.on_event("startup")
-async def startup_event():
-    """应用启动时初始化数据库 + 启动保活定时器"""
-    init_db()
-    asyncio.create_task(keepalive_loop())
-    logger.info("阅流·书星平台后端启动完成")
 
 
 # ============================================================
