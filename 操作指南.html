@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>阅流·书星项目 | 落地操作全流程指南</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: #f5f7fa; color: #333; line-height: 1.8;
+        }
+        .container { max-width: 900px; margin: 0 auto; padding: 20px 16px 60px; }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff; padding: 40px 20px; text-align: center; border-radius: 0 0 20px 20px;
+            margin-bottom: 30px;
+        }
+        .header h1 { font-size: 26px; margin-bottom: 8px; }
+        .header p { font-size: 14px; opacity: 0.85; }
+        /* 时间线 */
+        .timeline { position: relative; padding-left: 30px; }
+        .timeline::before {
+            content: ""; position: absolute; left: 10px; top: 0; bottom: 0;
+            width: 2px; background: #ddd;
+        }
+        .day {
+            position: relative; margin-bottom: 40px;
+        }
+        .day::before {
+            content: ""; position: absolute; left: -26px; top: 4px;
+            width: 14px; height: 14px; border-radius: 50%;
+            background: #667eea; border: 3px solid #fff; box-shadow: 0 0 0 2px #667eea;
+        }
+        .day-title {
+            font-size: 20px; font-weight: 700; color: #333; margin-bottom: 4px;
+        }
+        .day-subtitle { font-size: 13px; color: #999; margin-bottom: 16px; }
+        /* 卡片 */
+        .card {
+            background: #fff; border-radius: 12px; padding: 20px;
+            margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        }
+        .card h3 { font-size: 16px; font-weight: 600; margin-bottom: 12px; color: #333; }
+        .card h3 .emoji { margin-right: 6px; }
+        /* 步骤 */
+        .step {
+            display: flex; gap: 12px; margin-bottom: 16px; padding-bottom: 16px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .step:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .step-num {
+            flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%;
+            background: #667eea; color: #fff; display: flex; align-items: center;
+            justify-content: center; font-size: 13px; font-weight: 600;
+        }
+        .step-content { flex: 1; }
+        .step-content strong { color: #333; }
+        /* 代码块 */
+        .code-block {
+            background: #1e1e2e; color: #cdd6f4; border-radius: 8px;
+            padding: 12px 16px; font-family: "Fira Code", "Consolas", monospace;
+            font-size: 13px; margin: 8px 0; overflow-x: auto;
+        }
+        .code-block .comment { color: #6c7086; }
+        /* 提示框 */
+        .tip {
+            background: #e6f7ff; border-left: 4px solid #1890ff;
+            padding: 10px 14px; border-radius: 4px; font-size: 13px; margin: 8px 0;
+        }
+        .tip-warning {
+            background: #fff7e6; border-left: 4px solid #fa8c16;
+        }
+        .tip-success {
+            background: #f6ffed; border-left: 4px solid #52c41a;
+        }
+        /* 验收 */
+        .checklist {
+            background: #f6ffed; border-radius: 8px; padding: 14px 16px;
+            margin-top: 8px;
+        }
+        .checklist h4 { font-size: 14px; color: #389e0d; margin-bottom: 8px; }
+        .checklist ul { list-style: none; }
+        .checklist li { font-size: 13px; color: #555; padding: 3px 0; }
+        .checklist li::before { content: "✓ "; color: #52c41a; font-weight: bold; }
+        /* 按钮 */
+        .btn {
+            display: inline-block; padding: 8px 18px; border: none; border-radius: 6px;
+            font-size: 13px; cursor: pointer; text-decoration: none; font-weight: 500;
+        }
+        .btn-primary { background: #667eea; color: #fff; }
+        /* 表格 */
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #f5f5f5; font-weight: 600; }
+        /* 文件清单 */
+        .file-list { font-size: 13px; }
+        .file-list li { padding: 4px 0; }
+        .file-list code {
+            background: #f0f0f0; padding: 2px 6px; border-radius: 4px;
+            font-family: "Fira Code", "Consolas", monospace; font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📚 阅流·书星项目</h1>
+        <p>弃用 Replit 永久免费平台落地全流程操作指南<br>零基础 · 8天落地 · 全程免费</p>
+    </div>
+
+    <div class="container">
+        <!-- 架构概览 -->
+        <div class="card">
+            <h3><span class="emoji">🏗️</span>免费架构总览</h3>
+            <table>
+                <tr><th>功能</th><th>平台</th><th>免费额度</th></tr>
+                <tr><td>后端 API 服务</td><td>Render</td><td>750小时/月（单服务永久挂机）</td></tr>
+                <tr><td>在线代码编辑</td><td>GitHub Codespaces</td><td>免费在线云 IDE</td></tr>
+                <tr><td>前端页面托管</td><td>GitHub Pages</td><td>永久免费、永不休眠</td></tr>
+                <tr><td>AI 视频生成</td><td>Coze 扣子</td><td>免费额度足够商用</td></tr>
+                <tr><td>素材存储分发</td><td>阅流 Pro</td><td>基础版免费</td></tr>
+                <tr><td>数据备份</td><td>Supabase</td><td>免费库备份</td></tr>
+            </table>
+        </div>
+
+        <!-- 文件清单 -->
+        <div class="card">
+            <h3><span class="emoji">📦</span>项目文件清单（已全部生成）</h3>
+            <ul class="file-list">
+                <li><code>main.py</code> — FastAPI 后端主程序 + 数据库 + API 接口 + 保活 + 分账</li>
+                <li><code>coze_prompts.py</code> — 5 大赛道 AI 口播提示词库</li>
+                <li><code>digital_human_prompt.py</code> — 数字人人设配置（5 套形象+音色）</li>
+                <li><code>yueliu_workflow.py</code> — 分发时间、标题生成、爆款判定逻辑</li>
+                <li><code>c端.html</code> — 创作者 C 端前台页面</li>
+                <li><code>b端.html</code> — 出版社 B 端投放页面</li>
+                <li><code>.env</code> — 环境变量配置模板</li>
+                <li><code>requirements.txt</code> — Python 依赖清单</li>
+                <li><code>.gitignore</code> — Git 忽略规则</li>
+            </ul>
+        </div>
+
+        <!-- 时间线 -->
+        <div class="timeline">
+
+            <!-- Day 0 -->
+            <div class="day">
+                <div class="day-title">第 0 天：账号注册 + 密钥归集</div>
+                <div class="day-subtitle">全天完成，所有密钥统一存入记事本</div>
+                <div class="card">
+                    <h3><span class="emoji">1️⃣</span>注册 GitHub 账号（必备）</h3>
+                    <div class="step">
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            打开 <strong>github.com</strong>，点击右上角 <strong>Sign up</strong>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            输入邮箱、设置密码、用户名（用户名建议用拼音，如 <strong>yueliu2024</strong>）
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">3</div>
+                        <div class="step-content">
+                            邮箱验证后即可登录，无需信用卡
+                        </div>
+                    </div>
+                    <div class="tip tip-success">✅ GitHub 账号是后续所有操作的基础，优先注册</div>
+                </div>
+
+                <div class="card">
+                    <h3><span class="emoji">2️⃣</span>注册 Render 账号</h3>
+                    <div class="step">
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            打开 <strong>render.com</strong>，点击 <strong>Get Started</strong>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            选择 <strong>用 GitHub 账号登录</strong>（推荐，省去重复注册）
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">3</div>
+                        <div class="step-content">
+                            授权 Render 访问你的 GitHub，无需信用卡
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3><span class="emoji">3️⃣</span>注册 Coze 扣子账号</h3>
+                    <div class="step">
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            打开 <strong>coze.cn</strong>，用手机号或抖音账号登录
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            进入工作空间 → 创建智能体（用于后续搭建 AI 工作流）
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3><span class="emoji">4️⃣</span>申领火山引擎方舟 API Key</h3>
+                    <div class="step">
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            打开 <strong>console.volcengine.com/ark</strong>，注册火山引擎账号
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            进入 <strong>方舟大模型平台</strong> → 模型广场 → 开通 <strong>豆包大模型</strong>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">3</div>
+                        <div class="step-content">
+                            进入 <strong>API Key 管理</strong> → 创建 API Key → 复制保存
+                        </div>
+                    </div>
+                    <div class="tip">将密钥存入记事本：<code>DOUBAO_API_KEY=你的密钥</code></div>
+                </div>
+
+                <div class="card">
+                    <h3><span class="emoji">5️⃣</span>注册阅流 Pro 账号</h3>
+                    <div class="step">
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            打开 <strong>yueliu.com</strong>，注册阅流 Pro 基础免费版
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            进入 <strong>开放平台</strong> → 创建应用 → 获取 <strong>AK/SK 密钥对</strong>
+                        </div>
+                    </div>
+                    <div class="tip">将密钥存入记事本：<code>YUELIU_AK=你的AK</code> 和 <code>YUELIU_SK=你的SK</code></div>
+                </div>
+
+                <div class="checklist">
+                    <h4>📋 当日验收清单</h4>
+                    <ul>
+                        <li>GitHub 账号可登录</li>
+                        <li>Render 账号已关联 GitHub</li>
+                        <li>Coze 扣子账号可登录</li>
+                        <li>火山引擎方舟 API Key 已保存</li>
+                        <li>阅流 Pro AK/SK 已保存</li>
+                        <li>所有密钥存入记事本《阅流项目密钥汇总表》</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Day 1 -->
+            <div class="day">
+                <div class="day-title">第 1 天：GitHub 仓库 + Codespaces</div>
+                <div class="day-subtitle">创建代码仓库，上传全部源码</div>
+                <div class="card">
+                    <h3><span class="emoji">📝</span>步骤 1：新建 GitHub 仓库</h3>
+                    <div class="step">
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            登录 GitHub → 右上角 <strong>+</strong> → <strong>New repository</strong>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            仓库名称填 <code>yueliu-bookstar-platform</code><br>
+                            勾选 <strong>Public</strong>（公开仓库免费部署）<br>
+                            勾选 <strong>Add a README file</strong><br>
+                            点击 <strong>Create repository</strong>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3><span class="emoji">💻</span>步骤 2：打开 Codespaces 在线 IDE</h3>
+                    <div class="step">
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            进入仓库页面 → 绿色 <strong>Code</strong> 按钮 → <strong>Codespaces</strong> 标签 → <strong>Create codespace on main</strong>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            等待 1 分钟加载，界面和 Replit 一样：左侧文件栏 + 底部终端
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3><span class="emoji">📄</span>步骤 3：上传全部项目文件</h3>
+                    <div class="step">
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            将我帮你生成的 9 个文件拖拽到 Codespaces 左侧文件栏<br>
+                            或者逐个 <strong>右键 → New File</strong> → 粘贴代码 → <strong>Ctrl+S</strong> 保存
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            确认文件齐全：<code>main.py</code> <code>coze_prompts.py</code> <code>digital_human_prompt.py</code> <code>yueliu_workflow.py</code> <code>c端.html</code> <code>b端.html</code> <code>.env</code> <code>requirements.txt</code> <code>.gitignore</code>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3><span class="emoji">🔧</span>步骤 4：安装依赖并测试</h3>
+                    <div class="code-block"><span class="comment"># 在 Codespaces 底部终端执行</span>
+pip install -r requirements.txt</div>
+                    <div class="code-block"><span class="comment"># 启动后端测试</span>
+python main.py</div>
+                    <div class="step">
+                        <div class="step-num">3</div>
+                        <div class="step-content">
+                            打开预览地址 <code>/docs</code>，看到蓝色 FastAPI 接口文档 = 成功
+                        </div>
+                    </div>
+                </div>
+                <div class="checklist">
+                    <h4>📋 当日验收</h4>
+                    <ul>
+                        <li>GitHub 仓库文件齐全无缺失</li>
+                        <li>Codespaces 可正常运行后端</li>
+                        <li>FastAPI 接口文档正常打开</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Day 2 -->
+            <div class="day">
+                <div class="day-title">第 2 天：Render 部署后端</div>
+                <div class="day-subtitle">上线后端 API 公网地址</div>
+                <div class="card">
+                    <h3><span class="emoji">📤</span>步骤 1：推送代码到 GitHub</h3>
+                    <div class="code-block"><span class="comment"># Codespaces 终端执行</span>
+git add .
+git commit -m "阅流书星初始完整源码提交"
+git push</div>
+                </div>
+                <div class="card">
+                    <h3><span class="emoji">🚀</span>步骤 2：Render 部署</h3>
+                    <div class="step">
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            登录 Render → <strong>New</strong> → <strong>Web Service</strong>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            选择 <strong>Build from GitHub repository</strong> → 选中 <code>yueliu-bookstar-platform</code>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">3</div>
+                        <div class="step-content">
+                            <strong>部署参数（一字不改）：</strong>
+                            <table style="margin-top:8px;">
+                                <tr><th>参数</th><th>值</th></tr>
+                                <tr><td>Name</td><td><code>yueliu-bookstar-api</code></td></tr>
+                                <tr><td>Region</td><td><code>Singapore</code></td></tr>
+                                <tr><td>Runtime</td><td><code>Python 3</code></td></tr>
+                                <tr><td>Build Command</td><td><code>pip install -r requirements.txt</code></td></tr>
+                                <tr><td>Start Command</td><td><code>uvicorn main:app --host 0.0.0.0 --port $PORT</code></td></tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">4</div>
+                        <div class="step-content">
+                            点击 <strong>Advanced</strong> → <strong>Add Environment Variable</strong>，逐条填入 .env 内所有变量：<br>
+                            <code>DOUBAO_API_KEY</code>、<code>COZE_WORKFLOW_ID</code>、<code>COZE_TOKEN</code>、<code>YUELIU_AK</code>、<code>YUELIU_SK</code>、<code>BACKEND_URL</code>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">5</div>
+                        <div class="step-content">
+                            点击 <strong>Create Web Service</strong>，等待 3-5 分钟构建完成
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3><span class="emoji">✅</span>步骤 3：验证部署</h3>
+                    <div class="step">
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            部署完成后获得地址：<code>https://yueliu-bookstar-api.onrender.com</code>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            浏览器访问 <code>域名/docs</code>，接口文档正常打开 = 成功
+                        </div>
+                    </div>
+                    <div class="tip tip-warning">⚠️ 记住这个域名！后面配置 GitHub Pages 和 Coze 时都要用到。<br>
+                    将域名填入 Render 的环境变量 <code>BACKEND_URL</code> 中（保活用）</div>
+                </div>
+                <div class="checklist">
+                    <h4>📋 当日验收</h4>
+                    <ul>
+                        <li>后端拥有永久公网 HTTPS 接口地址</li>
+                        <li>所有环境密钥配置生效</li>
+                        <li>/docs 接口文档外网可正常访问</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Day 3 -->
+            <div class="day">
+                <div class="day-title">第 3 天：GitHub Pages 部署前端</div>
+                <div class="day-subtitle">C/B 端页面永久上线</div>
+                <div class="card">
+                    <h3><span class="emoji">🌐</span>步骤 1：创建 gh-pages 分支</h3>
+                    <div class="code-block"><span class="comment"># Codespaces 终端执行</span>
+git checkout -b gh-pages
+<span class="comment"># 仅保留 c端.html、b端.html，删除其他文件</span>
+git add c端.html b端.html
+git commit -m "前端静态页面部署分支"
+git push origin gh-pages</div>
+                </div>
+                <div class="card">
+                    <h3><span class="emoji">⚙️</span>步骤 2：开启 GitHub Pages</h3>
+                    <div class="step">
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            仓库 <strong>Settings</strong> → <strong>Pages</strong>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            Source 分支选 <strong>gh-pages</strong>，文件夹选 <strong>/(root)</strong> → 保存
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">3</div>
+                        <div class="step-content">
+                            1 分钟后获得地址：<code>https://用户名.github.io/yueliu-bookstar-platform/</code><br>
+                            创作者后台：<code>域名/c端.html</code><br>
+                            出版社后台：<code>域名/b端.html</code>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3><span class="emoji">🔗</span>步骤 3：修改前端 API 地址</h3>
+                    <div class="step">
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            打开 <code>c端.html</code> 和 <code>b端.html</code>，找到这一行：
+                            <div class="code-block">const apiUrl = "http://localhost:8000/api";</div>
+                            改为你的 Render 后端域名：
+                            <div class="code-block">const apiUrl = "https://yueliu-bookstar-api.onrender.com/api";</div>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            推送代码更新：
+                            <div class="code-block">git add .
+git commit -m "更新前端API地址"
+git push origin gh-pages</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="checklist">
+                    <h4>📋 当日验收</h4>
+                    <ul>
+                        <li>C 端、B 端前台网页公网永久可访问</li>
+                        <li>前后端数据互通交互正常</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Day 4-5 -->
+            <div class="day">
+                <div class="day-title">第 4-5 天：Coze 扣子 AI 工作流</div>
+                <div class="day-subtitle">AI 自动生成短视频核心</div>
+                <div class="card">
+                    <h3><span class="emoji">🤖</span>工作流搭建</h3>
+                    <div class="step">
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            Coze 新建工作流：<strong>阅流书星 - 图书数字人全自动生产工作流</strong>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            <strong>开始节点</strong>固定 4 个入参：<code>book_name</code>、<code>book_type</code>、<code>book_info</code>、<code>digital_human_id</code>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">3</div>
+                        <div class="step-content">
+                            <strong>依次搭建 8 个串联节点：</strong>
+                            <table style="margin-top:8px;">
+                                <tr><th>节点</th><th>功能</th></tr>
+                                <tr><td>节点 1</td><td>条件分支 — 按赛道匹配 5 套口播提示词</td></tr>
+                                <tr><td>节点 2</td><td>大模型 — 生成口播文案</td></tr>
+                                <tr><td>节点 3</td><td>大模型 — 生成 9:16 竖屏分镜镜头文案</td></tr>
+                                <tr><td>节点 4</td><td>AI 语音合成 — 匹配赛道数字人音色</td></tr>
+                                <tr><td>节点 5</td><td>AI 绘图 — 生成 3 张背景画面</td></tr>
+                                <tr><td>节点 6</td><td>数字人视频合成 — 输出成片 MP4 链接</td></tr>
+                                <tr><td>节点 7</td><td>大模型 — 生成分发策略 JSON</td></tr>
+                                <tr><td>节点 8</td><td>结束节点 — 整合全部内容标准 JSON 返回</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">4</div>
+                        <div class="step-content">
+                            发布工作流 → 获取 <strong>Workflow ID</strong> 和 <strong>Access Token</strong>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">5</div>
+                        <div class="step-content">
+                            将 <code>COZE_WORKFLOW_ID</code> 和 <code>COZE_TOKEN</code> 填入 Render 后端环境变量
+                        </div>
+                    </div>
+                </div>
+                <div class="checklist">
+                    <h4>📋 当日验收</h4>
+                    <ul>
+                        <li>Coze 工作流可完整跑通</li>
+                        <li>后端能调用 Coze 拿到文案、音频、视频链接</li>
+                        <li>密钥已填入 Render 环境变量</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Day 6 -->
+            <div class="day">
+                <div class="day-title">第 6 天：三方对接配置</div>
+                <div class="day-subtitle">代码已内置，只需配置平台</div>
+                <div class="tip tip-success">
+                    ✅ <strong>好消息！</strong>main.py 已内置全部 4 个业务接口（call_coze、save_video、auto_distribute、order_callback），无需额外编码。
+                </div>
+                <div class="card">
+                    <h3><span class="emoji">📂</span>阅流 Pro 后台配置</h3>
+                    <div class="step">
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            创建 5 大赛道素材文件夹：主账号、童书、职场、心理、文学
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            配置订单回调地址：<code>你的Render域名/api/order_callback</code>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">3</div>
+                        <div class="step-content">
+                            开放 API 权限，将 Render 服务器加入调用白名单
+                        </div>
+                    </div>
+                </div>
+                <div class="checklist">
+                    <h4>📋 当日验收</h4>
+                    <ul>
+                        <li>后端 ↔ Coze 双向调用通畅</li>
+                        <li>视频可自动上传阅流素材池</li>
+                        <li>可生成多平台定时分发任务</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Day 7 -->
+            <div class="day">
+                <div class="day-title">第 7 天：前端联动验证</div>
+                <div class="day-subtitle">业务流转闭环已内置，验证即可</div>
+                <div class="tip tip-success">
+                    ✅ <strong>c端.html 和 b端.html 已内置全部功能模块：</strong><br>
+                    B 端：发布任务 → 自动触发 Coze 生成短视频<br>
+                    C 端：任务认领 → 我的作品 → 我的账单（收益/提现）
+                </div>
+                <div class="card">
+                    <h3><span class="emoji">🧪</span>实操测试</h3>
+                    <div class="step">
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            打开 B 端页面 → 录入图书信息 → 点击发布 → 观察 AI 自动生成进度
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            打开 C 端页面 → 任务大厅 → 认领任务 → 查看我的作品
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">3</div>
+                        <div class="step-content">
+                            模拟订单回调 → 访问 <code>Render域名/docs</code> → 找到 <code>POST /api/order_callback</code> → 测试分账计算
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Day 8 -->
+            <div class="day">
+                <div class="day-title">第 8 天：全链路测试 + 上线营业</div>
+                <div class="day-subtitle">🎉 恭喜！平台已可正式盈利</div>
+                <div class="card">
+                    <h3><span class="emoji">🔄</span>完整业务闭环</h3>
+                    <div class="step">
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            <strong>出版社投放（B端）：</strong>录入图书 → 发布任务 → AI全自动生成短视频 → 多平台分发
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            <strong>创作者接单（C端）：</strong>认领任务 → 视频分发曝光 → 用户下单购书
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">3</div>
+                        <div class="step-content">
+                            <strong>自动分账盈利：</strong>用户买书成交 → 电商推送佣金 → 后端自动计算收益 → 三方共赢
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3><span class="emoji">💰</span>盈利模式</h3>
+                    <table>
+                        <tr><th>收入来源</th><th>说明</th></tr>
+                        <tr><td>创作者会员订阅</td><td>基础 ¥29/月、专业 ¥99/月</td></tr>
+                        <tr><td>平台服务费</td><td>免费10%、基础8%、专业5%</td></tr>
+                        <tr><td>出版社加急</td><td>24小时出片，按次收费</td></tr>
+                        <tr><td>爆款投流</td><td>S级爆款DOU+助推服务费</td></tr>
+                    </table>
+                </div>
+                <div class="card">
+                    <h3><span class="emoji">🔧</span>故障自查</h3>
+                    <table>
+                        <tr><th>问题</th><th>解决</th></tr>
+                        <tr><td>Coze 调用无返回</td><td>核对 WorkflowID、Token、入参字段名</td></tr>
+                        <tr><td>视频无法上传阅流</td><td>核验 AK/SK 密钥、文件夹ID</td></tr>
+                        <tr><td>分账金额错误</td><td>检查 main.py 抽佣比例 RATIO_MAP</td></tr>
+                        <tr><td>前端页面空白</td><td>核对 JS 内 apiUrl 后端域名</td></tr>
+                        <tr><td>Render 后端休眠</td><td>确认 BACKEND_URL 已配置，保活脚本自动运行</td></tr>
+                    </table>
+                </div>
+                <div class="checklist">
+                    <h4>📋 最终交付清单</h4>
+                    <ul>
+                        <li>GitHub 全套项目源码仓库</li>
+                        <li>Render 后端永久公网 API 地址</li>
+                        <li>GitHub Pages 前端永久访问地址</li>
+                        <li>Coze 工作流已发布运行</li>
+                        <li>阅流 Pro 素材库已配置</li>
+                        <li>全流程可跑通：发布→生成→分发→成交→分账</li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>

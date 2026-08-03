@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>阅流·书星 | 出版社投放后台</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: #f0f2f5; color: #333; min-height: 100vh;
+        }
+        /* 顶部导航 */
+        .header {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: #fff; padding: 20px; text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .header h1 { font-size: 22px; margin-bottom: 4px; }
+        .header p { font-size: 13px; opacity: 0.85; }
+        /* 标签栏 */
+        .tabs {
+            display: flex; background: #fff; position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+        }
+        .tab {
+            flex: 1; padding: 14px 0; text-align: center; cursor: pointer;
+            font-size: 14px; color: #666; border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+        }
+        .tab.active { color: #11998e; border-bottom-color: #11998e; font-weight: 600; }
+        .tab:hover { background: #f0fff4; }
+        /* 内容区 */
+        .content { max-width: 900px; margin: 0 auto; padding: 20px 16px; }
+        .panel { display: none; }
+        .panel.active { display: block; }
+        /* 卡片 */
+        .card {
+            background: #fff; border-radius: 12px; padding: 20px;
+            margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        }
+        .card-title { font-size: 16px; font-weight: 600; margin-bottom: 14px; color: #333; }
+        /* 表单 */
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; font-size: 13px; color: #666; margin-bottom: 6px; }
+        .form-group label .required { color: #f5222d; }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%; padding: 10px 12px; border: 1px solid #ddd;
+            border-radius: 8px; font-size: 14px; transition: border-color 0.2s;
+        }
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+            outline: none; border-color: #11998e;
+        }
+        .form-group textarea { resize: vertical; min-height: 80px; }
+        /* 赛道选择 */
+        .category-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 12px;
+        }
+        .category-item {
+            border: 2px solid #eee; border-radius: 10px; padding: 14px 8px;
+            text-align: center; cursor: pointer; transition: all 0.2s;
+        }
+        .category-item:hover { border-color: #11998e; background: #f0fff4; }
+        .category-item.selected { border-color: #11998e; background: #e6fff0; color: #11998e; }
+        .category-item .emoji { font-size: 28px; display: block; margin-bottom: 6px; }
+        .category-item .name { font-size: 14px; font-weight: 500; }
+        /* 按钮 */
+        .btn {
+            display: inline-block; padding: 10px 24px; border: none; border-radius: 8px;
+            font-size: 14px; cursor: pointer; transition: all 0.2s; font-weight: 500;
+        }
+        .btn-primary { background: #11998e; color: #fff; }
+        .btn-primary:hover { background: #0d8a7e; }
+        .btn-success { background: #52c41a; color: #fff; }
+        .btn-success:hover { background: #46a818; }
+        .btn-block { display: block; width: 100%; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        /* 任务列表 */
+        .task-item {
+            border: 1px solid #eee; border-radius: 10px; padding: 14px;
+            margin-bottom: 12px;
+        }
+        .task-item:hover { border-color: #ccc; box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
+        .task-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .task-header .book-name { font-size: 15px; font-weight: 600; }
+        .task-header .time { font-size: 12px; color: #999; }
+        .task-meta { font-size: 13px; color: #666; margin-bottom: 6px; }
+        .task-meta span { margin-right: 16px; }
+        .task-meta .commission { color: #f5222d; font-weight: 600; }
+        /* 状态标签 */
+        .status-badge {
+            display: inline-block; padding: 2px 10px; border-radius: 12px;
+            font-size: 12px; font-weight: 500;
+        }
+        .status-pending { background: #fff7e6; color: #fa8c16; }
+        .status-claimed { background: #e6f7ff; color: #1890ff; }
+        .status-generating { background: #f0f0ff; color: #667eea; }
+        .status-published { background: #f6ffed; color: #52c41a; }
+        .status-completed { background: #f0f0f0; color: #999; }
+        /* 空状态 */
+        .empty { text-align: center; padding: 40px 0; color: #999; font-size: 14px; }
+        .empty .emoji { font-size: 40px; display: block; margin-bottom: 10px; }
+        /* loading */
+        .loading { text-align: center; padding: 20px; color: #999; }
+        .spinner {
+            border: 3px solid #f0f0f0; border-top: 3px solid #11998e;
+            border-radius: 50%; width: 30px; height: 30px;
+            animation: spin 1s linear infinite; margin: 0 auto 10px;
+        }
+        @keyframes spin { 0% { transform: rotate(0); } 100% { transform: rotate(360deg); } }
+        /* toast */
+        .toast {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            background: #333; color: #fff; padding: 10px 20px; border-radius: 8px;
+            font-size: 14px; z-index: 9999; opacity: 0; transition: opacity 0.3s;
+        }
+        .toast.show { opacity: 1; }
+        /* 进度提示 */
+        .progress-steps {
+            display: flex; justify-content: space-between; margin: 16px 0;
+            font-size: 12px; color: #999;
+        }
+        .progress-step { text-align: center; flex: 1; position: relative; }
+        .progress-step::after {
+            content: ""; position: absolute; top: 12px; left: 50%; right: -50%;
+            height: 2px; background: #eee; z-index: 0;
+        }
+        .progress-step:last-child::after { display: none; }
+        .progress-step .dot {
+            width: 24px; height: 24px; border-radius: 50%; background: #eee;
+            margin: 0 auto 6px; display: flex; align-items: center; justify-content: center;
+            font-size: 12px; color: #fff; position: relative; z-index: 1;
+        }
+        .progress-step.active .dot { background: #11998e; }
+        .progress-step.done .dot { background: #52c41a; }
+        /* 统计卡片 */
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px;
+        }
+        .stat-card {
+            background: #fff; border-radius: 10px; padding: 16px; text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        }
+        .stat-card .value { font-size: 24px; font-weight: 700; color: #11998e; }
+        .stat-card .label { font-size: 12px; color: #999; margin-top: 4px; }
+        /* 盈利模式 */
+        .profit-card {
+            background: linear-gradient(135deg, #fff9e6 0%, #fff3cd 100%);
+            border-radius: 10px; padding: 16px; margin-top: 12px;
+        }
+        .profit-card h4 { font-size: 14px; color: #d48806; margin-bottom: 8px; }
+        .profit-card p { font-size: 13px; color: #666; line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <!-- ====== 后端API地址（部署后修改为你的Render域名）====== -->
+    <script>
+        const apiUrl = "http://localhost:8000/api";
+    </script>
+
+    <div class="header">
+        <h1>📚 阅流·书星 · 出版社投放后台</h1>
+        <p>发布图书任务 · AI自动生成数字人短视频 · 多平台分发带货</p>
+    </div>
+
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab('publish')">📤 发布任务</div>
+        <div class="tab" onclick="switchTab('manage')">📋 任务管理</div>
+        <div class="tab" onclick="switchTab('stats')">📊 数据统计</div>
+        <div class="tab" onclick="switchTab('profit')">💰 盈利模式</div>
+    </div>
+
+    <div class="content">
+        <!-- ====== 面板1: 发布任务 ====== -->
+        <div class="panel active" id="panel-publish">
+            <div class="card">
+                <div class="card-title">选择图书赛道</div>
+                <div class="category-grid" id="categoryGrid"></div>
+            </div>
+            <div class="card">
+                <div class="card-title">填写图书推广信息</div>
+                <div class="form-group">
+                    <label>书名 <span class="required">*</span></label>
+                    <input type="text" id="bookName" placeholder="例如：小王子">
+                </div>
+                <div class="form-group">
+                    <label>ISBN（选填）</label>
+                    <input type="text" id="bookIsbn" placeholder="例如：9787020042494">
+                </div>
+                <div class="form-group">
+                    <label>图书简介 <span class="required">*</span></label>
+                    <textarea id="bookInfo" placeholder="简要描述图书内容，AI会根据简介生成更精准的口播文案..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>佣金比例 <span class="required">*</span></label>
+                    <select id="commissionRate">
+                        <option value="0.3">30% — 标准佣金</option>
+                        <option value="0.4">40% — 高佣金（推荐）</option>
+                        <option value="0.5">50% — 超高佣金（快速起量）</option>
+                        <option value="0.2">20% — 低佣金</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary btn-block" onclick="publishTask()" id="publishBtn">
+                    🚀 发布任务（自动生成AI短视频）
+                </button>
+            </div>
+
+            <!-- 生成进度提示 -->
+            <div class="card" id="progressCard" style="display:none;">
+                <div class="card-title">🎬 AI短视频生成进度</div>
+                <div class="progress-steps">
+                    <div class="progress-step done"><div class="dot">✓</div>发布任务</div>
+                    <div class="progress-step active"><div class="dot">2</div>AI写文案</div>
+                    <div class="progress-step"><div class="dot">3</div>生成分镜</div>
+                    <div class="progress-step"><div class="dot">4</div>语音合成</div>
+                    <div class="progress-step"><div class="dot">5</div>AI绘图</div>
+                    <div class="progress-step"><div class="dot">6</div>数字人视频</div>
+                    <div class="progress-step"><div class="dot">7</div>分发策略</div>
+                    <div class="progress-step"><div class="dot">8</div>完成</div>
+                </div>
+                <p style="text-align:center;color:#999;font-size:13px;margin-top:8px;">
+                    AI正在全自动生成中，预计1-2分钟完成，无需人工操作
+                </p>
+            </div>
+        </div>
+
+        <!-- ====== 面板2: 任务管理 ====== -->
+        <div class="panel" id="panel-manage">
+            <div class="card">
+                <div class="card-title">
+                    📋 已发布任务
+                    <button class="btn btn-primary" style="float:right;padding:4px 12px;font-size:12px;" onclick="loadMyTasks()">刷新</button>
+                </div>
+                <div id="taskList">
+                    <div class="empty"><span class="emoji">📭</span>暂无已发布任务</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ====== 面板3: 数据统计 ====== -->
+        <div class="panel" id="panel-stats">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="value" id="totalTasks">0</div>
+                    <div class="label">发布任务</div>
+                </div>
+                <div class="stat-card">
+                    <div class="value" id="publishedVideos">0</div>
+                    <div class="label">已生成视频</div>
+                </div>
+                <div class="stat-card">
+                    <div class="value" id="totalDistributes">0</div>
+                    <div class="label">分发记录</div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-title">📊 全部任务概览</div>
+                <div id="statsList">
+                    <div class="empty"><span class="emoji">📊</span>暂无数据</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ====== 面板4: 盈利模式 ====== -->
+        <div class="panel" id="panel-profit">
+            <div class="card">
+                <div class="card-title">💰 平台盈利模式</div>
+                <div class="profit-card">
+                    <h4>📌 三方共赢分账模式</h4>
+                    <p>
+                        用户买书成交 → 电商推送佣金订单至后端回调接口<br>
+                        系统根据创作者会员等级自动计算收益，余额入账<br>
+                        平台赚取固定比例服务费；创作者赚取带货佣金；出版社售卖图书<br>
+                        <strong>三方共赢，平台持续盈利</strong>
+                    </p>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-title">📊 分账比例规则</div>
+                <table style="width:100%;border-collapse:collapse;font-size:14px;">
+                    <tr style="background:#f5f5f5;">
+                        <th style="padding:10px;text-align:left;border-radius:8px 0 0 8px;">会员等级</th>
+                        <th style="padding:10px;text-align:center;">平台抽成</th>
+                        <th style="padding:10px;text-align:center;border-radius:0 8px 8px 0;">创作者得</th>
+                    </tr>
+                    <tr>
+                        <td style="padding:10px;border-bottom:1px solid #eee;">免费用户</td>
+                        <td style="padding:10px;text-align:center;border-bottom:1px solid #eee;color:#f5222d;">10%</td>
+                        <td style="padding:10px;text-align:center;border-bottom:1px solid #eee;color:#52c41a;">90%</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:10px;border-bottom:1px solid #eee;">基础会员（¥29/月）</td>
+                        <td style="padding:10px;text-align:center;border-bottom:1px solid #eee;color:#fa8c16;">8%</td>
+                        <td style="padding:10px;text-align:center;border-bottom:1px solid #eee;color:#52c41a;">92%</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:10px;">专业会员（¥99/月）</td>
+                        <td style="padding:10px;text-align:center;color:#11998e;">5%</td>
+                        <td style="padding:10px;text-align:center;color:#52c41a;">95%</td>
+                    </tr>
+                </table>
+                <p style="margin-top:10px;font-size:12px;color:#999;">
+                    收益计算公式：创作者实得佣金 = 总佣金 - 平台服务费 + 拉新奖励（¥5/单）
+                </p>
+            </div>
+            <div class="card">
+                <div class="card-title">💎 增收服务</div>
+                <div class="profit-card" style="margin-bottom:10px;">
+                    <h4>🎬 创作者会员订阅</h4>
+                    <p>基础会员 ¥29/月：每月10个任务 + 8%服务费 + 优先接单<br>
+                    专业会员 ¥99/月：无限任务 + 5%服务费 + AI优化 + 投流补贴</p>
+                </div>
+                <div class="profit-card" style="margin-bottom:10px;">
+                    <h4>⚡ 出版社加急生产</h4>
+                    <p>24小时内出片（标准为48小时），按次收费<br>批量套餐：10本以上8折，50本以上6折</p>
+                </div>
+                <div class="profit-card">
+                    <h4>🚀 爆款视频投流助推</h4>
+                    <p>S级爆款建议投入 ¥100-500 DOU+<br>A级潜力建议投入 ¥50-200 薯条</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ====== 全局状态 ======
+        let selectedCategory = null;
+        let currentPublisher = null;
+
+        const categories = [
+            { type: "童书", emoji: "🧸", name: "童书绘本" },
+            { type: "职场", emoji: "💼", name: "职场成长" },
+            { type: "心理", emoji: "💜", name: "心理疗愈" },
+            { type: "文学", emoji: "📖", name: "文学经典" },
+            { type: "综合", emoji: "✨", name: "综合好物" },
+        ];
+
+        // ====== 初始化 ======
+        function init() {
+            renderCategories();
+            const saved = localStorage.getItem("publisher");
+            if (saved) {
+                currentPublisher = JSON.parse(saved);
+                loadMyTasks();
+            } else {
+                promptRegister();
+            }
+        }
+
+        function promptRegister() {
+            const name = prompt("欢迎使用阅流·书星出版社后台！请输入出版社名称：");
+            if (!name) return;
+            const contact = prompt("请输入联系人电话（选填）：") || "";
+            fetch(apiUrl + "/publishers", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name: name, contact: contact })
+            })
+            .then(r => r.json())
+            .then(res => {
+                if (res.code === 0) {
+                    currentPublisher = { id: res.data.publisher_id, name: name };
+                    localStorage.setItem("publisher", JSON.stringify(currentPublisher));
+                    showToast("出版社注册成功！开始发布任务 🎉");
+                }
+            })
+            .catch(() => showToast("网络错误，请检查后端服务是否启动"));
+        }
+
+        // ====== 赛道选择 ======
+        function renderCategories() {
+            const grid = document.getElementById("categoryGrid");
+            grid.innerHTML = categories.map(c => `
+                <div class="category-item" onclick="selectCategory('${c.type}')" id="cat-${c.type}">
+                    <span class="emoji">${c.emoji}</span>
+                    <span class="name">${c.name}</span>
+                </div>
+            `).join("");
+        }
+
+        function selectCategory(type) {
+            selectedCategory = type;
+            categories.forEach(c => {
+                document.getElementById("cat-" + c.type).classList.remove("selected");
+            });
+            document.getElementById("cat-" + type).classList.add("selected");
+        }
+
+        // ====== 发布任务 ======
+        function publishTask() {
+            const bookName = document.getElementById("bookName").value.trim();
+            const bookIsbn = document.getElementById("bookIsbn").value.trim();
+            const bookInfo = document.getElementById("bookInfo").value.trim();
+            const commissionRate = parseFloat(document.getElementById("commissionRate").value);
+
+            if (!currentPublisher) { showToast("请先注册出版社"); return; }
+            if (!selectedCategory) { showToast("请选择赛道"); return; }
+            if (!bookName) { showToast("请输入书名"); return; }
+            if (!bookInfo) { showToast("请填写图书简介"); return; }
+
+            const btn = document.getElementById("publishBtn");
+            btn.disabled = true;
+            btn.textContent = "⏳ 正在发布并生成AI视频...";
+
+            fetch(apiUrl + "/publishers/" + currentPublisher.id + "/tasks", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    publisher_id: currentPublisher.id,
+                    book_name: bookName,
+                    book_isbn: bookIsbn,
+                    book_type: selectedCategory,
+                    book_info: bookInfo,
+                    commission_rate: commissionRate,
+                    digital_human_id: "default"
+                })
+            })
+            .then(r => r.json())
+            .then(res => {
+                if (res.code === 0) {
+                    showToast("任务发布成功！AI短视频正在自动生成 🎬");
+                    document.getElementById("progressCard").style.display = "block";
+                    // 模拟进度更新
+                    simulateProgress();
+                    // 清空表单
+                    document.getElementById("bookName").value = "";
+                    document.getElementById("bookIsbn").value = "";
+                    document.getElementById("bookInfo").value = "";
+                    selectedCategory = null;
+                    categories.forEach(c => document.getElementById("cat-" + c.type).classList.remove("selected"));
+                } else {
+                    showToast(res.detail || "发布失败");
+                }
+            })
+            .catch(() => showToast("网络错误，请检查后端服务"))
+            .finally(() => {
+                btn.disabled = false;
+                btn.textContent = "🚀 发布任务（自动生成AI短视频）";
+            });
+        }
+
+        function simulateProgress() {
+            const steps = document.querySelectorAll(".progress-step");
+            let current = 1;
+            const interval = setInterval(() => {
+                if (current >= steps.length) {
+                    clearInterval(interval);
+                    showToast("AI短视频生成完成！✅");
+                    return;
+                }
+                steps[current - 1].classList.remove("active");
+                steps[current - 1].classList.add("done");
+                steps[current - 1].querySelector(".dot").textContent = "✓";
+                steps[current].classList.add("active");
+                current++;
+            }, 1500);
+        }
+
+        // ====== 任务管理 ======
+        function loadMyTasks() {
+            if (!currentPublisher) return;
+            fetch(apiUrl + "/tasks")
+            .then(r => r.json())
+            .then(res => {
+                const list = document.getElementById("taskList");
+                if (!res.data || res.data.length === 0) {
+                    list.innerHTML = '<div class="empty"><span class="emoji">📭</span>暂无已发布任务</div>';
+                    return;
+                }
+                // 过滤当前出版社的任务
+                const myTasks = res.data.filter(t => t.publisher_id === currentPublisher.id);
+                if (myTasks.length === 0) {
+                    list.innerHTML = '<div class="empty"><span class="emoji">📭</span>暂无已发布任务</div>';
+                    return;
+                }
+                const statusMap = {
+                    "pending": ["待处理", "status-pending"],
+                    "claimed": ["已认领", "status-claimed"],
+                    "generating": ["AI生成中", "status-generating"],
+                    "published": ["已发布", "status-published"],
+                    "completed": ["已完成", "status-completed"],
+                };
+                list.innerHTML = myTasks.map(t => {
+                    const [statusText, statusClass] = statusMap[t.status] || ["未知", "status-pending"];
+                    let videoHtml = "";
+                    if (t.video_url) {
+                        videoHtml = `<video src="${t.video_url}" controls style="width:100%;border-radius:8px;margin-top:10px;"></video>`;
+                    }
+                    return `
+                        <div class="task-item">
+                            <div class="task-header">
+                                <span class="book-name">📕 ${t.book_name}</span>
+                                <span class="time">${t.created_at || ''}</span>
+                            </div>
+                            <div class="task-meta">
+                                <span>赛道：${t.book_type}</span>
+                                <span>ISBN：${t.book_isbn || '未填写'}</span>
+                                <span class="commission">佣金：${(t.commission_rate * 100).toFixed(0)}%</span>
+                                <span class="status-badge ${statusClass}">${statusText}</span>
+                            </div>
+                            ${videoHtml}
+                        </div>
+                    `;
+                }).join("");
+            })
+            .catch(() => {
+                document.getElementById("taskList").innerHTML = '<div class="empty"><span class="emoji">🔌</span>无法连接服务器</div>';
+            });
+        }
+
+        // ====== 数据统计 ======
+        function loadStats() {
+            if (!currentPublisher) return;
+            fetch(apiUrl + "/tasks")
+            .then(r => r.json())
+            .then(res => {
+                const myTasks = (res.data || []).filter(t => t.publisher_id === currentPublisher.id);
+                document.getElementById("totalTasks").textContent = myTasks.length;
+                const published = myTasks.filter(t => t.status === "published" || t.status === "completed");
+                document.getElementById("publishedVideos").textContent = published.length;
+                document.getElementById("totalDistributes").textContent = published.length * 3; // 3平台
+
+                const list = document.getElementById("statsList");
+                if (myTasks.length === 0) {
+                    list.innerHTML = '<div class="empty"><span class="emoji">📊</span>暂无数据</div>';
+                    return;
+                }
+                list.innerHTML = myTasks.map(t => `
+                    <div class="task-item">
+                        <div class="task-header">
+                            <span class="book-name">📕 ${t.book_name}</span>
+                            <span class="time">${t.created_at || ''}</span>
+                        </div>
+                        <div class="task-meta">
+                            <span>赛道：${t.book_type}</span>
+                            <span>佣金：${(t.commission_rate * 100).toFixed(0)}%</span>
+                            <span>视频状态：${t.video_status || '待生成'}</span>
+                        </div>
+                    </div>
+                `).join("");
+            })
+            .catch(() => {});
+        }
+
+        // ====== Tab切换 ======
+        function switchTab(name) {
+            document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+            document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+            event.target.classList.add("active");
+            document.getElementById("panel-" + name).classList.add("active");
+
+            if (name === "manage") loadMyTasks();
+            if (name === "stats") loadStats();
+        }
+
+        // ====== Toast提示 ======
+        function showToast(msg) {
+            const t = document.getElementById("toast");
+            t.textContent = msg;
+            t.classList.add("show");
+            setTimeout(() => t.classList.remove("show"), 3000);
+        }
+
+        // ====== 启动 ======
+        init();
+    </script>
+</body>
+</html>

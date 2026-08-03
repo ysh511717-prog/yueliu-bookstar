@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>阅流·书星 | 创作者中心</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: #f0f2f5; color: #333; min-height: 100vh;
+        }
+        /* 顶部导航 */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff; padding: 20px; text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .header h1 { font-size: 22px; margin-bottom: 4px; }
+        .header p { font-size: 13px; opacity: 0.85; }
+        /* 标签栏 */
+        .tabs {
+            display: flex; background: #fff; position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+        }
+        .tab {
+            flex: 1; padding: 14px 0; text-align: center; cursor: pointer;
+            font-size: 14px; color: #666; border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+        }
+        .tab.active { color: #667eea; border-bottom-color: #667eea; font-weight: 600; }
+        .tab:hover { background: #f8f8ff; }
+        /* 内容区 */
+        .content { max-width: 900px; margin: 0 auto; padding: 20px 16px; }
+        .panel { display: none; }
+        .panel.active { display: block; }
+        /* 卡片 */
+        .card {
+            background: #fff; border-radius: 12px; padding: 20px;
+            margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        }
+        .card-title { font-size: 16px; font-weight: 600; margin-bottom: 14px; color: #333; }
+        /* 赛道选择 */
+        .category-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 12px; margin-bottom: 16px;
+        }
+        .category-item {
+            border: 2px solid #eee; border-radius: 10px; padding: 16px 8px;
+            text-align: center; cursor: pointer; transition: all 0.2s;
+        }
+        .category-item:hover { border-color: #667eea; background: #f8f8ff; }
+        .category-item.selected {
+            border-color: #667eea; background: #f0f0ff; color: #667eea;
+        }
+        .category-item .emoji { font-size: 28px; display: block; margin-bottom: 6px; }
+        .category-item .name { font-size: 14px; font-weight: 500; }
+        /* 表单 */
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; font-size: 13px; color: #666; margin-bottom: 6px; }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%; padding: 10px 12px; border: 1px solid #ddd;
+            border-radius: 8px; font-size: 14px; transition: border-color 0.2s;
+        }
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none; border-color: #667eea;
+        }
+        .form-group textarea { resize: vertical; min-height: 60px; }
+        /* 按钮 */
+        .btn {
+            display: inline-block; padding: 10px 24px; border: none; border-radius: 8px;
+            font-size: 14px; cursor: pointer; transition: all 0.2s; font-weight: 500;
+        }
+        .btn-primary { background: #667eea; color: #fff; }
+        .btn-primary:hover { background: #5568d3; }
+        .btn-success { background: #52c41a; color: #fff; }
+        .btn-success:hover { background: #46a818; }
+        .btn-warning { background: #faad14; color: #fff; }
+        .btn-block { display: block; width: 100%; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        /* 状态标签 */
+        .status-badge {
+            display: inline-block; padding: 2px 10px; border-radius: 12px;
+            font-size: 12px; font-weight: 500;
+        }
+        .status-pending { background: #fff7e6; color: #fa8c16; }
+        .status-claimed { background: #e6f7ff; color: #1890ff; }
+        .status-generating { background: #f0f0ff; color: #667eea; }
+        .status-published { background: #f6ffed; color: #52c41a; }
+        .status-completed { background: #f0f0f0; color: #999; }
+        /* 任务列表 */
+        .task-item {
+            border: 1px solid #eee; border-radius: 10px; padding: 14px;
+            margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;
+        }
+        .task-item:hover { border-color: #ccc; box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
+        .task-info { flex: 1; }
+        .task-info .book-name { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+        .task-info .book-meta { font-size: 12px; color: #999; }
+        .task-info .commission { color: #f5222d; font-weight: 600; margin-top: 4px; font-size: 13px; }
+        /* 空状态 */
+        .empty { text-align: center; padding: 40px 0; color: #999; font-size: 14px; }
+        .empty .emoji { font-size: 40px; display: block; margin-bottom: 10px; }
+        /* 账单统计 */
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px;
+        }
+        .stat-card {
+            background: #fff; border-radius: 10px; padding: 16px; text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        }
+        .stat-card .value { font-size: 24px; font-weight: 700; color: #667eea; }
+        .stat-card .label { font-size: 12px; color: #999; margin-top: 4px; }
+        /* AI脚本预览 */
+        .script-preview {
+            background: #f8f9fa; border-radius: 8px; padding: 16px;
+            font-size: 14px; line-height: 1.8; white-space: pre-wrap; display: none;
+            margin-top: 12px; border-left: 3px solid #667eea;
+        }
+        /* loading */
+        .loading { text-align: center; padding: 20px; color: #999; }
+        .spinner {
+            border: 3px solid #f0f0f0; border-top: 3px solid #667eea;
+            border-radius: 50%; width: 30px; height: 30px;
+            animation: spin 1s linear infinite; margin: 0 auto 10px;
+        }
+        @keyframes spin { 0% { transform: rotate(0); } 100% { transform: rotate(360deg); } }
+        /* 创作者信息 */
+        .creator-bar {
+            background: #fff; border-radius: 10px; padding: 12px 16px;
+            display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        }
+        .creator-bar .name { font-weight: 600; font-size: 15px; }
+        .creator-bar .level {
+            padding: 3px 10px; border-radius: 12px; font-size: 12px;
+            background: #fff7e6; color: #fa8c16;
+        }
+        .creator-bar .balance { font-size: 18px; font-weight: 700; color: #f5222d; }
+        /* toast */
+        .toast {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            background: #333; color: #fff; padding: 10px 20px; border-radius: 8px;
+            font-size: 14px; z-index: 9999; opacity: 0; transition: opacity 0.3s;
+        }
+        .toast.show { opacity: 1; }
+    </style>
+</head>
+<body>
+    <!-- ====== 后端API地址（部署后修改为你的Render域名）====== -->
+    <script>
+        const apiUrl = "http://localhost:8000/api";
+    </script>
+
+    <div class="header">
+        <h1>📚 阅流·书星 · 创作者中心</h1>
+        <p>认领图书任务 · AI自动生成短视频 · 多平台分发带货赚佣金</p>
+    </div>
+
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab('generate')">🎬 生成脚本</div>
+        <div class="tab" onclick="switchTab('tasks')">📋 任务大厅</div>
+        <div class="tab" onclick="switchTab('works')">📹 我的作品</div>
+        <div class="tab" onclick="switchTab('bill')">💰 我的账单</div>
+    </div>
+
+    <div class="content">
+        <!-- 创作者信息条 -->
+        <div class="creator-bar" id="creatorBar" style="display:none;">
+            <div>
+                <span class="name" id="creatorName"></span>
+                <span class="level" id="creatorLevel"></span>
+            </div>
+            <div>
+                <span style="font-size:12px;color:#999;">余额</span>
+                <span class="balance" id="creatorBalance">¥0.00</span>
+            </div>
+        </div>
+
+        <!-- ====== 面板1: 生成AI脚本 ====== -->
+        <div class="panel active" id="panel-generate">
+            <div class="card">
+                <div class="card-title">选择赛道</div>
+                <div class="category-grid" id="categoryGrid"></div>
+            </div>
+            <div class="card">
+                <div class="card-title">填写图书信息</div>
+                <div class="form-group">
+                    <label>书名</label>
+                    <input type="text" id="bookName" placeholder="例如：小王子">
+                </div>
+                <div class="form-group">
+                    <label>图书简介（选填）</label>
+                    <textarea id="bookInfo" placeholder="简要描述图书内容..."></textarea>
+                </div>
+                <button class="btn btn-primary btn-block" onclick="generateScript()">
+                    ✨ 生成AI口播脚本
+                </button>
+                <div class="script-preview" id="scriptPreview"></div>
+            </div>
+        </div>
+
+        <!-- ====== 面板2: 任务大厅 ====== -->
+        <div class="panel" id="panel-tasks">
+            <div class="card">
+                <div class="card-title">
+                    📋 待认领任务
+                    <button class="btn btn-primary" style="float:right;padding:4px 12px;font-size:12px;" onclick="loadTasks()">刷新</button>
+                </div>
+                <div id="taskList">
+                    <div class="empty"><span class="emoji">📭</span>暂无任务，请稍后再来</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ====== 面板3: 我的作品 ====== -->
+        <div class="panel" id="panel-works">
+            <div class="card">
+                <div class="card-title">
+                    📹 我的视频作品
+                    <button class="btn btn-primary" style="float:right;padding:4px 12px;font-size:12px;" onclick="loadMyWorks()">刷新</button>
+                </div>
+                <div id="worksList">
+                    <div class="empty"><span class="emoji">🎬</span>暂无作品，快去认领任务吧！</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ====== 面板4: 我的账单 ====== -->
+        <div class="panel" id="panel-bill">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="value" id="totalEarnings">¥0</div>
+                    <div class="label">累计收益</div>
+                </div>
+                <div class="stat-card">
+                    <div class="value" id="orderCount">0</div>
+                    <div class="label">成交订单</div>
+                </div>
+                <div class="stat-card">
+                    <div class="value" id="videoCount">0</div>
+                    <div class="label">视频作品</div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-title">📜 收益明细</div>
+                <div id="billList">
+                    <div class="empty"><span class="emoji">💰</span>暂无收益记录</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ====== 全局状态 ======
+        let selectedCategory = null;
+        let currentCreator = null;
+
+        const categories = [
+            { type: "童书", emoji: "🧸", name: "童书绘本" },
+            { type: "职场", emoji: "💼", name: "职场成长" },
+            { type: "心理", emoji: "💜", name: "心理疗愈" },
+            { type: "文学", emoji: "📖", name: "文学经典" },
+            { type: "综合", emoji: "✨", name: "综合好物" },
+        ];
+
+        // ====== 初始化 ======
+        function init() {
+            renderCategories();
+            // 尝试从本地存储恢复创作者信息
+            const saved = localStorage.getItem("creator");
+            if (saved) {
+                currentCreator = JSON.parse(saved);
+                showCreatorBar();
+                loadTasks();
+                loadMyWorks();
+                loadBills();
+            } else {
+                // 首次进入引导注册
+                promptRegister();
+            }
+        }
+
+        function promptRegister() {
+            const name = prompt("欢迎使用阅流·书星！请输入你的昵称：");
+            if (!name) return;
+            fetch(apiUrl + "/creators", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name: name, member_level: "免费" })
+            })
+            .then(r => r.json())
+            .then(res => {
+                if (res.code === 0) {
+                    currentCreator = { id: res.data.creator_id, name: name, member_level: "免费", balance: 0 };
+                    localStorage.setItem("creator", JSON.stringify(currentCreator));
+                    showCreatorBar();
+                    showToast("注册成功！开始接单赚钱吧 🎉");
+                }
+            })
+            .catch(() => showToast("网络错误，请检查后端服务是否启动"));
+        }
+
+        function showCreatorBar() {
+            document.getElementById("creatorBar").style.display = "flex";
+            document.getElementById("creatorName").textContent = currentCreator.name;
+            document.getElementById("creatorLevel").textContent = currentCreator.member_level;
+            document.getElementById("creatorBalance").textContent = "¥" + (currentCreator.balance || 0).toFixed(2);
+        }
+
+        // ====== 赛道选择 ======
+        function renderCategories() {
+            const grid = document.getElementById("categoryGrid");
+            grid.innerHTML = categories.map(c => `
+                <div class="category-item" onclick="selectCategory('${c.type}')" id="cat-${c.type}">
+                    <span class="emoji">${c.emoji}</span>
+                    <span class="name">${c.name}</span>
+                </div>
+            `).join("");
+        }
+
+        function selectCategory(type) {
+            selectedCategory = type;
+            categories.forEach(c => {
+                document.getElementById("cat-" + c.type).classList.remove("selected");
+            });
+            document.getElementById("cat-" + type).classList.add("selected");
+        }
+
+        // ====== 生成AI脚本 ======
+        function generateScript() {
+            const bookName = document.getElementById("bookName").value.trim();
+            const bookInfo = document.getElementById("bookInfo").value.trim();
+
+            if (!selectedCategory) { showToast("请先选择赛道"); return; }
+            if (!bookName) { showToast("请输入书名"); return; }
+
+            const preview = document.getElementById("scriptPreview");
+            preview.style.display = "block";
+            preview.innerHTML = '<div class="loading"><div class="spinner"></div>AI正在创作口播文案...</div>';
+
+            // 调用后端生成脚本（通过 Coze 工作流）
+            // 这里先模拟生成，实际部署后对接 /api/call_coze
+            fetch(apiUrl + "/tasks", {
+                method: "GET",
+            })
+            .then(r => r.json())
+            .then(() => {
+                // 模拟AI生成的脚本
+                const script = generateMockScript(bookName, selectedCategory, bookInfo);
+                preview.innerHTML = script;
+                showToast("脚本生成成功！✨");
+            })
+            .catch(() => {
+                // 后端未启动时也展示模拟结果
+                const script = generateMockScript(bookName, selectedCategory, bookInfo);
+                preview.innerHTML = script;
+                showToast("脚本生成成功（本地预览）！✨");
+            });
+        }
+
+        function generateMockScript(name, type, info) {
+            const templates = {
+                "童书": `你家孩子是不是也经常不爱看书？\n这本《${name}》完美解决！\n\n画面一翻开，色彩鲜艳的插图立刻抓住孩子眼球。\n故事讲的是一个小小的冒险，却藏着大大的道理。\n\n读完孩子问我："妈妈，我们什么时候也能去冒险？"\n这就是好书的力量。\n\n点击下方链接，限时优惠，给孩子最好的礼物！`,
+                "职场": `工作3年还在原地踏步？\n这本书会让你少走5年弯路。\n\n《${name}》不是鸡汤，全是方法论。\n第一章就颠覆了我的认知：\n原来职场晋升不是靠努力，而是靠策略。\n\n读完直接用了书里的方法，第二个月就加薪了。\n\n想升职加薪？点击下方立即下单！`,
+                "心理": `如果你最近总是觉得很累，请停下来看看这本书。\n\n《${name》里有一句话戳中了我：\n"你不是不够好，你只是太累了。"\n\n读完这本书，我终于和过去的自己和解了。\n那些说不出口的情绪，这本书都替你写出来了。\n\n如果你也正在经历这些，这本书会抱抱你。点击下方购买。`,
+                "文学": `如果今年只读一本书，我选这本《${name}》。\n\n有些书读完会改变你的人生，这就是其中一本。\n\n书中的文字像一首诗，每一页都值得反复品味。\n合上书的那一刻，我哭了。\n\n好书值得被更多人看见。点击下方链接，把这本书带回家。`,
+                "综合": `最近被这本书刷屏了，读完真的yyds！\n\n《${name}》凭什么卖爆？看完你就懂了。\n\n书中三个观点直接打开了我的新世界：\n1. 认知决定上限\n2. 行动改变命运\n3. 坚持创造奇迹\n\n好书不等人，点击下方链接立即购买！`,
+            };
+            return templates[type] || templates["综合"];
+        }
+
+        // ====== 任务大厅 ======
+        function loadTasks() {
+            fetch(apiUrl + "/tasks?status=pending")
+            .then(r => r.json())
+            .then(res => {
+                const list = document.getElementById("taskList");
+                if (!res.data || res.data.length === 0) {
+                    list.innerHTML = '<div class="empty"><span class="emoji">📭</span>暂无待认领任务，请稍后再来</div>';
+                    return;
+                }
+                list.innerHTML = res.data.map(t => `
+                    <div class="task-item">
+                        <div class="task-info">
+                            <div class="book-name">📕 ${t.book_name}</div>
+                            <div class="book-meta">赛道：${t.book_type} | 出版社：${t.publisher_name || '未知'}</div>
+                            <div class="commission">佣金比例：${(t.commission_rate * 100).toFixed(0)}%</div>
+                        </div>
+                        <button class="btn btn-success" onclick="claimTask(${t.id})">认领</button>
+                    </div>
+                `).join("");
+            })
+            .catch(() => {
+                document.getElementById("taskList").innerHTML = '<div class="empty"><span class="emoji">🔌</span>无法连接服务器</div>';
+            });
+        }
+
+        function claimTask(taskId) {
+            if (!currentCreator) { showToast("请先注册"); return; }
+            fetch(apiUrl + "/tasks/" + taskId + "/claim", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ creator_id: currentCreator.id })
+            })
+            .then(r => r.json())
+            .then(res => {
+                if (res.code === 0) {
+                    showToast("认领成功！视频正在自动生成 🎬");
+                    loadTasks();
+                } else {
+                    showToast(res.detail || "认领失败");
+                }
+            })
+            .catch(() => showToast("网络错误"));
+        }
+
+        // ====== 我的作品 ======
+        function loadMyWorks() {
+            if (!currentCreator) return;
+            fetch(apiUrl + "/tasks?creator_id=" + currentCreator.id)
+            .then(r => r.json())
+            .then(res => {
+                const list = document.getElementById("worksList");
+                if (!res.data || res.data.length === 0) {
+                    list.innerHTML = '<div class="empty"><span class="emoji">🎬</span>暂无作品，快去认领任务吧！</div>';
+                    return;
+                }
+                list.innerHTML = res.data.map(t => {
+                    const statusMap = {
+                        "pending": ["待处理", "status-pending"],
+                        "claimed": ["已认领", "status-claimed"],
+                        "generating": ["生成中", "status-generating"],
+                        "published": ["已发布", "status-published"],
+                        "completed": ["已完成", "status-completed"],
+                    };
+                    const [statusText, statusClass] = statusMap[t.status] || ["未知", "status-pending"];
+                    let videoHtml = "";
+                    if (t.video_url) {
+                        videoHtml = `<video src="${t.video_url}" controls style="width:100%;border-radius:8px;margin-top:8px;"></video>`;
+                    }
+                    return `
+                        <div class="task-item" style="flex-direction:column;align-items:stretch;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;">
+                                <div class="task-info">
+                                    <div class="book-name">📕 ${t.book_name}</div>
+                                    <div class="book-meta">赛道：${t.book_type}</div>
+                                </div>
+                                <span class="status-badge ${statusClass}">${statusText}</span>
+                            </div>
+                            ${videoHtml}
+                        </div>
+                    `;
+                }).join("");
+            })
+            .catch(() => {
+                document.getElementById("worksList").innerHTML = '<div class="empty"><span class="emoji">🔌</span>无法连接服务器</div>';
+            });
+        }
+
+        // ====== 我的账单 ======
+        function loadBills() {
+            if (!currentCreator) return;
+
+            // 加载创作者详情
+            fetch(apiUrl + "/creators/" + currentCreator.id)
+            .then(r => r.json())
+            .then(res => {
+                if (res.code === 0) {
+                    const d = res.data;
+                    document.getElementById("totalEarnings").textContent = "¥" + (d.total_earnings || 0).toFixed(0);
+                    document.getElementById("videoCount").textContent = d.video_count || 0;
+                    currentCreator.balance = d.balance;
+                    showCreatorBar();
+                }
+            })
+            .catch(() => {});
+
+            // 加载订单列表
+            fetch(apiUrl + "/orders?creator_id=" + currentCreator.id)
+            .then(r => r.json())
+            .then(res => {
+                const list = document.getElementById("billList");
+                if (!res.data || res.data.length === 0) {
+                    list.innerHTML = '<div class="empty"><span class="emoji">💰</span>暂无收益记录</div>';
+                    document.getElementById("orderCount").textContent = "0";
+                    return;
+                }
+                document.getElementById("orderCount").textContent = res.data.length;
+                list.innerHTML = res.data.map(o => `
+                    <div class="task-item">
+                        <div class="task-info">
+                            <div class="book-name">📕 ${o.book_name || '未知图书'}</div>
+                            <div class="book-meta">订单金额：¥${o.order_amount} | 佣金：¥${o.commission_amount}</div>
+                            <div class="commission">实得收益：¥${o.creator_earnings}（平台费¥${o.platform_fee}）</div>
+                        </div>
+                        <span class="status-badge status-published">已结算</span>
+                    </div>
+                `).join("");
+            })
+            .catch(() => {
+                document.getElementById("billList").innerHTML = '<div class="empty"><span class="emoji">🔌</span>无法连接服务器</div>';
+            });
+        }
+
+        // ====== Tab切换 ======
+        function switchTab(name) {
+            document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+            document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+            event.target.classList.add("active");
+            document.getElementById("panel-" + name).classList.add("active");
+
+            if (name === "tasks") loadTasks();
+            if (name === "works") loadMyWorks();
+            if (name === "bill") loadBills();
+        }
+
+        // ====== Toast提示 ======
+        function showToast(msg) {
+            const t = document.getElementById("toast");
+            t.textContent = msg;
+            t.classList.add("show");
+            setTimeout(() => t.classList.remove("show"), 2500);
+        }
+
+        // ====== 启动 ======
+        init();
+    </script>
+</body>
+</html>
