@@ -5,271 +5,751 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>阅流·书星 | 创作者中心</title>
     <style>
+        :root {
+            --bg: #f7f6f3;
+            --surface: #ffffff;
+            --brand: #4f46e5;
+            --brand-light: #eef2ff;
+            --brand-soft: #c7d2fe;
+            --accent: #f59e0b;
+            --accent-light: #fffbeb;
+            --green: #10b981;
+            --green-light: #ecfdf5;
+            --red: #ef4444;
+            --red-light: #fef2f2;
+            --text: #1e293b;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+            --border: #e2e8f0;
+            --border-light: #f1f5f9;
+            --radius-sm: 8px;
+            --radius: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 20px;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+            --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
+            --shadow-lg: 0 10px 30px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04);
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
-            font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
-            background: #f0f2f5; color: #333; min-height: 100vh;
+            font-family: -apple-system, "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
         }
-        /* 顶部导航 */
+
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #fff; padding: 20px; text-align: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #a855f7 100%);
+            color: #fff;
+            padding: 36px 24px 32px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
         }
-        .header h1 { font-size: 22px; margin-bottom: 4px; }
-        .header p { font-size: 13px; opacity: 0.85; }
-        /* 标签栏 */
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.06);
+            pointer-events: none;
+        }
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -5%;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.04);
+            pointer-events: none;
+        }
+        .header .logo-icon {
+            font-size: 40px;
+            display: block;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            position: relative;
+            z-index: 1;
+        }
+        .header p {
+            font-size: 13px;
+            opacity: 0.8;
+            margin-top: 6px;
+            font-weight: 400;
+            position: relative;
+            z-index: 1;
+        }
+        .header .badge {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 4px 14px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(4px);
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            position: relative;
+            z-index: 1;
+        }
+
         .tabs {
-            display: flex; background: #fff; position: sticky; top: 0; z-index: 100;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+            display: flex;
+            background: var(--surface);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow-sm);
+            padding: 4px 12px;
+            gap: 4px;
         }
         .tab {
-            flex: 1; padding: 14px 0; text-align: center; cursor: pointer;
-            font-size: 14px; color: #666; border-bottom: 3px solid transparent;
-            transition: all 0.2s;
+            flex: 1;
+            padding: 10px 6px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 13px;
+            color: var(--text-secondary);
+            border-radius: var(--radius);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 500;
+            position: relative;
         }
-        .tab.active { color: #667eea; border-bottom-color: #667eea; font-weight: 600; }
-        .tab:hover { background: #f8f8ff; }
-        /* 内容区 */
-        .content { max-width: 900px; margin: 0 auto; padding: 20px 16px; }
-        .panel { display: none; }
+        .tab:hover { background: var(--brand-light); color: var(--brand); }
+        .tab.active {
+            background: var(--brand);
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(79,70,229,0.3);
+        }
+
+        .content {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 20px 16px 40px;
+        }
+        .panel { display: none; animation: fadeIn 0.3s ease; }
         .panel.active { display: block; }
-        /* 卡片 */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
         .card {
-            background: #fff; border-radius: 12px; padding: 20px;
-            margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-light);
+            transition: box-shadow 0.2s;
         }
-        .card-title { font-size: 16px; font-weight: 600; margin-bottom: 14px; color: #333; }
-        /* 赛道选择 */
+        .card:hover { box-shadow: var(--shadow-md); }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .card-header .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--brand);
+            flex-shrink: 0;
+        }
+        .card-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text);
+            flex: 1;
+        }
+        .card-title .sub {
+            display: block;
+            font-size: 12px;
+            font-weight: 400;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
         .category-grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-            gap: 12px; margin-bottom: 16px;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+        }
+        @media (max-width: 520px) {
+            .category-grid { grid-template-columns: repeat(3, 1fr); }
         }
         .category-item {
-            border: 2px solid #eee; border-radius: 10px; padding: 16px 8px;
-            text-align: center; cursor: pointer; transition: all 0.2s;
+            background: var(--bg);
+            border: 2px solid transparent;
+            border-radius: var(--radius);
+            padding: 18px 6px 14px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
         }
-        .category-item:hover { border-color: #667eea; background: #f8f8ff; }
+        .category-item:hover {
+            background: var(--brand-light);
+            border-color: var(--brand-soft);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
         .category-item.selected {
-            border-color: #667eea; background: #f0f0ff; color: #667eea;
+            background: var(--brand);
+            border-color: var(--brand);
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(79,70,229,0.3);
         }
-        .category-item .emoji { font-size: 28px; display: block; margin-bottom: 6px; }
-        .category-item .name { font-size: 14px; font-weight: 500; }
-        /* 表单 */
-        .form-group { margin-bottom: 14px; }
-        .form-group label { display: block; font-size: 13px; color: #666; margin-bottom: 6px; }
-        .form-group input, .form-group textarea, .form-group select {
-            width: 100%; padding: 10px 12px; border: 1px solid #ddd;
-            border-radius: 8px; font-size: 14px; transition: border-color 0.2s;
+        .category-item .emoji {
+            font-size: 30px;
+            display: block;
+            margin-bottom: 8px;
+            transition: transform 0.25s;
         }
-        .form-group input:focus, .form-group textarea:focus {
-            outline: none; border-color: #667eea;
+        .category-item:hover .emoji { transform: scale(1.1); }
+        .category-item .name { font-size: 13px; font-weight: 500; }
+
+        .form-group { margin-bottom: 16px; }
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            letter-spacing: 0.3px;
         }
-        .form-group textarea { resize: vertical; min-height: 60px; }
-        /* 按钮 */
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 14px;
+            font-family: inherit;
+            background: var(--bg);
+            transition: all 0.2s;
+            color: var(--text);
+        }
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--brand);
+            background: var(--surface);
+            box-shadow: 0 0 0 3px rgba(79,70,229,0.1);
+        }
+        .form-group textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
+
         .btn {
-            display: inline-block; padding: 10px 24px; border: none; border-radius: 8px;
-            font-size: 14px; cursor: pointer; transition: all 0.2s; font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 11px 24px;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: inherit;
+            letter-spacing: 0.3px;
         }
-        .btn-primary { background: #667eea; color: #fff; }
-        .btn-primary:hover { background: #5568d3; }
-        .btn-success { background: #52c41a; color: #fff; }
-        .btn-success:hover { background: #46a818; }
-        .btn-warning { background: #faad14; color: #fff; }
-        .btn-block { display: block; width: 100%; }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        /* 状态标签 */
+        .btn-primary {
+            background: var(--brand);
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(79,70,229,0.25);
+        }
+        .btn-primary:hover {
+            background: #4338ca;
+            box-shadow: 0 4px 14px rgba(79,70,229,0.35);
+            transform: translateY(-1px);
+        }
+        .btn-success {
+            background: var(--green);
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(16,185,129,0.25);
+        }
+        .btn-success:hover {
+            background: #059669;
+            box-shadow: 0 4px 14px rgba(16,185,129,0.35);
+            transform: translateY(-1px);
+        }
+        .btn-outline {
+            background: transparent;
+            color: var(--brand);
+            border: 1.5px solid var(--brand);
+        }
+        .btn-outline:hover { background: var(--brand-light); }
+        .btn-block { display: flex; width: 100%; }
+        .btn-sm { padding: 6px 14px; font-size: 12px; border-radius: 6px; }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+
         .status-badge {
-            display: inline-block; padding: 2px 10px; border-radius: 12px;
-            font-size: 12px; font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
         }
-        .status-pending { background: #fff7e6; color: #fa8c16; }
-        .status-claimed { background: #e6f7ff; color: #1890ff; }
-        .status-generating { background: #f0f0ff; color: #667eea; }
-        .status-published { background: #f6ffed; color: #52c41a; }
-        .status-completed { background: #f0f0f0; color: #999; }
-        /* 任务列表 */
-        .task-item {
-            border: 1px solid #eee; border-radius: 10px; padding: 14px;
-            margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;
+        .status-pending { background: #fef3c7; color: #d97706; }
+        .status-claimed { background: #dbeafe; color: #2563eb; }
+        .status-generating { background: var(--brand-light); color: var(--brand); }
+        .status-published { background: var(--green-light); color: #059669; }
+        .status-completed { background: #f1f5f9; color: #94a3b8; }
+
+        .task-card {
+            background: var(--surface);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius);
+            padding: 16px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s;
         }
-        .task-item:hover { border-color: #ccc; box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
-        .task-info { flex: 1; }
-        .task-info .book-name { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
-        .task-info .book-meta { font-size: 12px; color: #999; }
-        .task-info .commission { color: #f5222d; font-weight: 600; margin-top: 4px; font-size: 13px; }
-        /* 空状态 */
-        .empty { text-align: center; padding: 40px 0; color: #999; font-size: 14px; }
-        .empty .emoji { font-size: 40px; display: block; margin-bottom: 10px; }
-        /* 账单统计 */
-        .stats-grid {
-            display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px;
+        .task-card:hover {
+            border-color: var(--border);
+            box-shadow: var(--shadow-md);
+        }
+        .task-card .book-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: var(--radius-sm);
+            background: var(--brand-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+        .task-card .task-body { flex: 1; min-width: 0; }
+        .task-card .task-body .title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .task-card .task-body .meta {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        .task-card .task-body .reward {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--red);
+            margin-top: 4px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 48px 20px;
+            color: var(--text-muted);
+        }
+        .empty-state .icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: var(--bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin: 0 auto 14px;
+        }
+        .empty-state .title { font-size: 14px; font-weight: 500; color: var(--text-secondary); margin-bottom: 4px; }
+        .empty-state .desc { font-size: 12px; color: var(--text-muted); }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
         }
         .stat-card {
-            background: #fff; border-radius: 10px; padding: 16px; text-align: center;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            padding: 20px 14px;
+            text-align: center;
+            border: 1px solid var(--border-light);
+            box-shadow: var(--shadow-sm);
         }
-        .stat-card .value { font-size: 24px; font-weight: 700; color: #667eea; }
-        .stat-card .label { font-size: 12px; color: #999; margin-top: 4px; }
-        /* AI脚本预览 */
+        .stat-card .value {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 4px;
+        }
+        .stat-card .label { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+
         .script-preview {
-            background: #f8f9fa; border-radius: 8px; padding: 16px;
-            font-size: 14px; line-height: 1.8; white-space: pre-wrap; display: none;
-            margin-top: 12px; border-left: 3px solid #667eea;
+            background: linear-gradient(135deg, #fafafa 0%, #f5f3ff 100%);
+            border-radius: var(--radius);
+            padding: 20px;
+            font-size: 14px;
+            line-height: 1.9;
+            white-space: pre-wrap;
+            display: none;
+            margin-top: 16px;
+            border: 1px solid var(--brand-soft);
+            border-left: 4px solid var(--brand);
+            color: var(--text);
         }
-        /* loading */
-        .loading { text-align: center; padding: 20px; color: #999; }
+
+        .loading-inline {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 24px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
         .spinner {
-            border: 3px solid #f0f0f0; border-top: 3px solid #667eea;
-            border-radius: 50%; width: 30px; height: 30px;
-            animation: spin 1s linear infinite; margin: 0 auto 10px;
+            width: 20px;
+            height: 20px;
+            border: 2.5px solid var(--border);
+            border-top-color: var(--brand);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
         }
-        @keyframes spin { 0% { transform: rotate(0); } 100% { transform: rotate(360deg); } }
-        /* 创作者信息 */
+        @keyframes spin { to { transform: rotate(360deg); } }
+
         .creator-bar {
-            background: #fff; border-radius: 10px; padding: 12px 16px;
-            display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            border: 1px solid var(--border-light);
+            box-shadow: var(--shadow-sm);
         }
-        .creator-bar .name { font-weight: 600; font-size: 15px; }
-        .creator-bar .level {
-            padding: 3px 10px; border-radius: 12px; font-size: 12px;
-            background: #fff7e6; color: #fa8c16;
+        .creator-bar .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4f46e5, #a855f7);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 600;
         }
-        .creator-bar .balance { font-size: 18px; font-weight: 700; color: #f5222d; }
-        /* toast */
+        .creator-bar .info { flex: 1; margin-left: 12px; }
+        .creator-bar .info .name {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text);
+        }
+        .creator-bar .info .lvl {
+            font-size: 11px;
+            color: var(--accent);
+            background: var(--accent-light);
+            padding: 1px 8px;
+            border-radius: 10px;
+            display: inline-block;
+            font-weight: 500;
+        }
+        .creator-bar .balance-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .creator-bar .balance-section .balance-label {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+        .creator-bar .balance-section .balance-value {
+            font-size: 18px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ef4444, #f97316);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .btn-logout {
+            background: var(--red-light);
+            color: var(--red);
+            border: none;
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .btn-logout:hover { background: #fecaca; }
+
         .toast {
-            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-            background: #333; color: #fff; padding: 10px 20px; border-radius: 8px;
-            font-size: 14px; z-index: 9999; opacity: 0; transition: opacity 0.3s;
+            position: fixed;
+            top: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--text);
+            color: #fff;
+            padding: 10px 24px;
+            border-radius: var(--radius);
+            font-size: 13px;
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s, transform 0.3s;
+            box-shadow: var(--shadow-lg);
+            font-weight: 500;
         }
-        .toast.show { opacity: 1; }
-        /* 注册弹窗 */
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(-4px); }
+
         .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15,23,42,0.5);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
             z-index: 10000;
+            animation: fadeIn 0.2s ease;
         }
         .modal-box {
-            background: #fff; border-radius: 16px; padding: 30px 24px; width: 360px; max-width: 90vw;
-            text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            background: var(--surface);
+            border-radius: var(--radius-xl);
+            padding: 36px 28px 28px;
+            width: 380px;
+            max-width: 90vw;
+            text-align: center;
+            box-shadow: var(--shadow-lg);
+            animation: modalIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .modal-box h2 { font-size: 20px; margin-bottom: 8px; color: #333; }
-        .modal-box p { font-size: 13px; color: #999; margin-bottom: 20px; }
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.95) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .modal-box .modal-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--brand-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin: 0 auto 16px;
+        }
+        .modal-box h2 { font-size: 18px; margin-bottom: 6px; color: var(--text); font-weight: 700; }
+        .modal-box .desc { font-size: 13px; color: var(--text-secondary); margin-bottom: 24px; }
         .modal-box input {
-            width: 100%; padding: 12px 14px; border: 2px solid #e8e8e8; border-radius: 10px;
-            font-size: 15px; outline: none; box-sizing: border-box; text-align: center;
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 15px;
+            outline: none;
+            box-sizing: border-box;
+            text-align: center;
+            font-family: inherit;
+            transition: all 0.2s;
+            background: var(--bg);
         }
-        .modal-box input:focus { border-color: #667eea; }
+        .modal-box input:focus {
+            border-color: var(--brand);
+            background: var(--surface);
+            box-shadow: 0 0 0 3px rgba(79,70,229,0.1);
+        }
         .modal-box .btn-confirm {
-            width: 100%; margin-top: 16px; padding: 12px; border: none; border-radius: 10px;
-            background: #667eea; color: #fff; font-size: 16px; font-weight: 600; cursor: pointer;
+            width: 100%;
+            margin-top: 16px;
+            padding: 13px;
+            border: none;
+            border-radius: var(--radius);
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: #fff;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+            letter-spacing: 0.3px;
         }
-        .modal-box .btn-confirm:hover { background: #5a6fd6; }
+        .modal-box .btn-confirm:hover {
+            box-shadow: 0 6px 20px rgba(79,70,229,0.35);
+            transform: translateY(-1px);
+        }
         .modal-box .btn-skip {
-            margin-top: 10px; background: none; border: none; color: #999; font-size: 13px;
-            cursor: pointer; text-decoration: underline;
+            margin-top: 12px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 12px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: color 0.2s;
         }
+        .modal-box .btn-skip:hover { color: var(--text-secondary); }
+
+        .tip-banner {
+            background: linear-gradient(135deg, #fef3c7 0%, #fef9c3 100%);
+            border: 1px solid #fcd34d;
+            border-radius: var(--radius);
+            padding: 12px 16px;
+            font-size: 12px;
+            color: #92400e;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .tip-banner .tip-icon { font-size: 18px; flex-shrink: 0; }
     </style>
 </head>
 <body>
-    <!-- 注册弹窗 -->
+
     <div class="modal-overlay" id="registerModal">
         <div class="modal-box">
-            <h2>👋 欢迎加入阅流·书星</h2>
-            <p>输入昵称，开启你的创作赚钱之旅</p>
-            <input type="text" id="registerNameInput" placeholder="请输入你的昵称" maxlength="20">
-            <button class="btn-confirm" onclick="doRegister()">开始创作 🚀</button>
-            <button class="btn-skip" onclick="skipRegister()">先逛逛</button>
+            <div class="modal-icon">📚</div>
+            <h2>欢迎加入阅流·书星</h2>
+            <p class="desc">输入昵称，开启创作赚钱之旅</p>
+            <input type="text" id="registerNameInput" placeholder="取一个酷炫的昵称" maxlength="20">
+            <button class="btn-confirm" onclick="doRegister()">开始创作</button>
+            <button class="btn-skip" onclick="skipRegister()">先随便逛逛</button>
         </div>
     </div>
 
-    <!-- ====== 后端API地址（部署后修改为你的Render域名）====== -->
     <script>
         const apiUrl = "https://yueliu-bookstar.onrender.com/api";
     </script>
 
     <div class="header">
-        <h1>📚 阅流·书星 · 创作者中心</h1>
-        <p>认领图书任务 · AI自动生成短视频 · 多平台分发带货赚佣金</p>
+        <span class="logo-icon">📚</span>
+        <h1>阅流·书星</h1>
+        <p>认领图书任务 · AI生成短视频 · 多平台分发赚佣金</p>
+        <span class="badge">创作者中心</span>
     </div>
 
     <div class="tabs" id="tabBar">
-        <div class="tab active" data-tab="generate">🎬 生成脚本</div>
-        <div class="tab" data-tab="tasks">📋 任务大厅</div>
-        <div class="tab" data-tab="works">📹 我的作品</div>
-        <div class="tab" data-tab="bill">💰 我的账单</div>
+        <div class="tab active" data-tab="generate">生成脚本</div>
+        <div class="tab" data-tab="tasks">任务大厅</div>
+        <div class="tab" data-tab="works">我的作品</div>
+        <div class="tab" data-tab="bill">我的账单</div>
     </div>
 
     <div class="content">
-        <!-- 创作者信息条 -->
         <div class="creator-bar" id="creatorBar" style="display:none;">
-            <div>
-                <span class="name" id="creatorName"></span>
-                <span class="level" id="creatorLevel"></span>
+            <div style="display:flex;align-items:center;">
+                <div class="avatar" id="creatorAvatar"></div>
+                <div class="info">
+                    <span class="name" id="creatorName"></span>
+                    <span class="lvl" id="creatorLevel"></span>
+                </div>
             </div>
-            <div style="display:flex;align-items:center;gap:12px;">
-                <span style="font-size:12px;color:#999;">余额</span>
-                <span class="balance" id="creatorBalance">¥0.00</span>
-                <button onclick="logout()" style="background:#ff4d4f;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;">退出</button>
+            <div class="balance-section">
+                <div>
+                    <div class="balance-label">账户余额</div>
+                    <div class="balance-value" id="creatorBalance">0.00</div>
+                </div>
+                <button class="btn-logout" onclick="logout()">退出</button>
             </div>
         </div>
 
-        <!-- ====== 面板1: 生成AI脚本 ====== -->
         <div class="panel active" id="panel-generate">
+            <div class="tip-banner">
+                <span class="tip-icon">💡</span>
+                <span>选择赛道并输入书名，AI 将为你自动生成短视频口播脚本</span>
+            </div>
             <div class="card">
-                <div class="card-title">选择赛道</div>
+                <div class="card-header">
+                    <span class="dot"></span>
+                    <span class="card-title">选择赛道</span>
+                </div>
                 <div class="category-grid" id="categoryGrid"></div>
             </div>
             <div class="card">
-                <div class="card-title">填写图书信息</div>
+                <div class="card-header">
+                    <span class="dot"></span>
+                    <span class="card-title">图书信息</span>
+                </div>
                 <div class="form-group">
                     <label>书名</label>
                     <input type="text" id="bookName" placeholder="例如：小王子">
                 </div>
                 <div class="form-group">
-                    <label>图书简介（选填）</label>
-                    <textarea id="bookInfo" placeholder="简要描述图书内容..."></textarea>
+                    <label>图书简介（选填，写得更准）</label>
+                    <textarea id="bookInfo" placeholder="简要描述图书内容，帮助AI生成更精准的文案..."></textarea>
                 </div>
                 <button class="btn btn-primary btn-block" onclick="generateScript()">
-                    ✨ 生成AI口播脚本
+                    <span>生成AI口播脚本</span>
                 </button>
                 <div class="script-preview" id="scriptPreview"></div>
             </div>
         </div>
 
-        <!-- ====== 面板2: 任务大厅 ====== -->
         <div class="panel" id="panel-tasks">
             <div class="card">
-                <div class="card-title">
-                    📋 待认领任务
-                    <button class="btn btn-primary" style="float:right;padding:4px 12px;font-size:12px;" onclick="loadTasks()">刷新</button>
+                <div class="card-header">
+                    <span class="dot"></span>
+                    <span class="card-title">待认领任务</span>
+                    <button class="btn btn-outline btn-sm" onclick="loadTasks()">刷新</button>
                 </div>
                 <div id="taskList">
-                    <div class="empty"><span class="emoji">📭</span>暂无任务，请稍后再来</div>
+                    <div class="empty-state">
+                        <div class="icon">📭</div>
+                        <div class="title">暂无待认领任务</div>
+                        <div class="desc">出版社正在准备新任务，请稍后再来</div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- ====== 面板3: 我的作品 ====== -->
         <div class="panel" id="panel-works">
             <div class="card">
-                <div class="card-title">
-                    📹 我的视频作品
-                    <button class="btn btn-primary" style="float:right;padding:4px 12px;font-size:12px;" onclick="loadMyWorks()">刷新</button>
+                <div class="card-header">
+                    <span class="dot"></span>
+                    <span class="card-title">我的视频作品</span>
+                    <button class="btn btn-outline btn-sm" onclick="loadMyWorks()">刷新</button>
                 </div>
                 <div id="worksList">
-                    <div class="empty"><span class="emoji">🎬</span>暂无作品，快去认领任务吧！</div>
+                    <div class="empty-state">
+                        <div class="icon">🎬</div>
+                        <div class="title">还没有作品</div>
+                        <div class="desc">去任务大厅认领第一个任务吧</div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- ====== 面板4: 我的账单 ====== -->
         <div class="panel" id="panel-bill">
-            <div class="stats-grid">
+            <div class="stats-row">
                 <div class="stat-card">
-                    <div class="value" id="totalEarnings">¥0</div>
-                    <div class="label">累计收益</div>
+                    <div class="value" id="totalEarnings">0</div>
+                    <div class="label">累计收益 (元)</div>
                 </div>
                 <div class="stat-card">
                     <div class="value" id="orderCount">0</div>
@@ -281,9 +761,16 @@
                 </div>
             </div>
             <div class="card">
-                <div class="card-title">📜 收益明细</div>
+                <div class="card-header">
+                    <span class="dot"></span>
+                    <span class="card-title">收益明细</span>
+                </div>
                 <div id="billList">
-                    <div class="empty"><span class="emoji">💰</span>暂无收益记录</div>
+                    <div class="empty-state">
+                        <div class="icon">💰</div>
+                        <div class="title">暂无收益记录</div>
+                        <div class="desc">发布视频后，佣金会在这里显示</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -292,7 +779,6 @@
     <div class="toast" id="toast"></div>
 
     <script>
-        // ====== 全局状态 ======
         let selectedCategory = null;
         let currentCreator = null;
 
@@ -304,22 +790,16 @@
             { type: "综合", emoji: "✨", name: "综合好物" },
         ];
 
-        // ====== 初始化 ======
         function init() {
-            // 绑定标签点击事件（用 JS 绑定比 onclick 属性更可靠）
             document.querySelectorAll("#tabBar .tab").forEach(tab => {
                 tab.addEventListener("click", function() {
                     switchTab(this.dataset.tab, this);
                 });
             });
-
-            // 回车键提交注册
             document.getElementById("registerNameInput").addEventListener("keydown", function(e) {
                 if (e.key === "Enter") doRegister();
             });
-
             renderCategories();
-            // 尝试从本地存储恢复创作者信息
             const saved = localStorage.getItem("creator");
             if (saved && saved !== "null" && saved !== "undefined") {
                 try {
@@ -336,7 +816,6 @@
                     localStorage.removeItem("creator");
                 }
             }
-            // 没有有效登录信息，弹窗保持显示（默认已显示）
             document.getElementById("registerNameInput").focus();
         }
 
@@ -370,12 +849,12 @@
                     loadTasks();
                     loadMyWorks();
                     loadBills();
-                    showToast("注册成功！开始接单赚钱吧 🎉");
+                    showToast("注册成功，开始接单赚钱吧");
                 } else {
                     showToast("注册失败：" + (res.message || "请重试"));
                 }
             })
-            .catch(() => showToast("网络错误，请检查后端服务是否启动"));
+            .catch(() => showToast("网络错误，请检查后端服务"));
         }
 
         function skipRegister() {
@@ -384,26 +863,23 @@
 
         function showCreatorBar() {
             document.getElementById("creatorBar").style.display = "flex";
+            document.getElementById("creatorAvatar").textContent = currentCreator.name.charAt(0);
             document.getElementById("creatorName").textContent = currentCreator.name;
             document.getElementById("creatorLevel").textContent = currentCreator.member_level;
-            document.getElementById("creatorBalance").textContent = "¥" + (currentCreator.balance || 0).toFixed(2);
+            document.getElementById("creatorBalance").textContent = (currentCreator.balance || 0).toFixed(2);
         }
 
         function logout() {
             localStorage.removeItem("creator");
             currentCreator = null;
             document.getElementById("creatorBar").style.display = "none";
-            // 清空列表
-            document.getElementById("taskList").innerHTML = '<div class="empty"><span class="emoji">📋</span>请先注册/登录</div>';
-            document.getElementById("worksList").innerHTML = '<div class="empty"><span class="emoji">📹</span>请先注册/登录</div>';
-            document.getElementById("billList").innerHTML = '<div class="empty"><span class="emoji">💰</span>请先注册/登录</div>';
-            // 回到生成脚本标签
+            document.getElementById("taskList").innerHTML = '<div class="empty-state"><div class="icon">📋</div><div class="title">请先注册/登录</div><div class="desc">登录后可查看和认领任务</div></div>';
+            document.getElementById("worksList").innerHTML = '<div class="empty-state"><div class="icon">📹</div><div class="title">请先注册/登录</div><div class="desc">登录后可查看你的作品</div></div>';
+            document.getElementById("billList").innerHTML = '<div class="empty-state"><div class="icon">💰</div><div class="title">请先注册/登录</div><div class="desc">登录后可查看收益明细</div></div>';
             switchTab("generate", document.querySelector('#tabBar .tab[data-tab="generate"]'));
-            // 显示注册弹窗
             promptRegister();
         }
 
-        // ====== 赛道选择 ======
         function renderCategories() {
             const grid = document.getElementById("categoryGrid");
             grid.innerHTML = categories.map(c => `
@@ -422,36 +898,26 @@
             document.getElementById("cat-" + type).classList.add("selected");
         }
 
-        // ====== 生成AI脚本 ======
         function generateScript() {
             const bookName = document.getElementById("bookName").value.trim();
             const bookInfo = document.getElementById("bookInfo").value.trim();
-
             if (!selectedCategory) { showToast("请先选择赛道"); return; }
             if (!bookName) { showToast("请输入书名"); return; }
-
             const preview = document.getElementById("scriptPreview");
             preview.style.display = "block";
-            preview.innerHTML = '<div class="loading"><div class="spinner"></div>AI正在创作口播文案...</div>';
-
-            // 调用后端生成脚本（通过 Coze 工作流）
-            // 这里先模拟生成，实际部署后对接 /api/call_coze
-            fetch(apiUrl + "/tasks", {
-                method: "GET",
-            })
-            .then(r => r.json())
-            .then(() => {
-                // 模拟AI生成的脚本
-                const script = generateMockScript(bookName, selectedCategory, bookInfo);
-                preview.innerHTML = script;
-                showToast("脚本生成成功！✨");
-            })
-            .catch(() => {
-                // 后端未启动时也展示模拟结果
-                const script = generateMockScript(bookName, selectedCategory, bookInfo);
-                preview.innerHTML = script;
-                showToast("脚本生成成功（本地预览）！✨");
-            });
+            preview.innerHTML = '<div class="loading-inline"><div class="spinner"></div><span>AI 正在为你创作口播文案…</span></div>';
+            fetch(apiUrl + "/tasks", { method: "GET" })
+                .then(r => r.json())
+                .then(() => {
+                    const script = generateMockScript(bookName, selectedCategory, bookInfo);
+                    preview.innerHTML = script;
+                    showToast("脚本生成成功");
+                })
+                .catch(() => {
+                    const script = generateMockScript(bookName, selectedCategory, bookInfo);
+                    preview.innerHTML = script;
+                    showToast("脚本生成成功（本地预览）");
+                });
         }
 
         function generateMockScript(name, type, info) {
@@ -465,30 +931,30 @@
             return templates[type] || templates["综合"];
         }
 
-        // ====== 任务大厅 ======
         function loadTasks() {
             fetch(apiUrl + "/tasks?status=pending")
-            .then(r => r.json())
-            .then(res => {
-                const list = document.getElementById("taskList");
-                if (!res.data || res.data.length === 0) {
-                    list.innerHTML = '<div class="empty"><span class="emoji">📭</span>暂无待认领任务，请稍后再来</div>';
-                    return;
-                }
-                list.innerHTML = res.data.map(t => `
-                    <div class="task-item">
-                        <div class="task-info">
-                            <div class="book-name">📕 ${t.book_name}</div>
-                            <div class="book-meta">赛道：${t.book_type} | 出版社：${t.publisher_name || '未知'}</div>
-                            <div class="commission">佣金比例：${(t.commission_rate * 100).toFixed(0)}%</div>
+                .then(r => r.json())
+                .then(res => {
+                    const list = document.getElementById("taskList");
+                    if (!res.data || res.data.length === 0) {
+                        list.innerHTML = '<div class="empty-state"><div class="icon">📭</div><div class="title">暂无待认领任务</div><div class="desc">出版社正在准备新任务，请稍后再来</div></div>';
+                        return;
+                    }
+                    list.innerHTML = res.data.map(t => `
+                        <div class="task-card">
+                            <div class="book-icon">📕</div>
+                            <div class="task-body">
+                                <div class="title">${t.book_name}</div>
+                                <div class="meta">${t.book_type} · ${t.publisher_name || '未知出版社'}</div>
+                                <div class="reward">佣金 ${(t.commission_rate * 100).toFixed(0)}%</div>
+                            </div>
+                            <button class="btn btn-success btn-sm" onclick="claimTask(${t.id})">认领</button>
                         </div>
-                        <button class="btn btn-success" onclick="claimTask(${t.id})">认领</button>
-                    </div>
-                `).join("");
-            })
-            .catch(() => {
-                document.getElementById("taskList").innerHTML = '<div class="empty"><span class="emoji">🔌</span>无法连接服务器</div>';
-            });
+                    `).join("");
+                })
+                .catch(() => {
+                    document.getElementById("taskList").innerHTML = '<div class="empty-state"><div class="icon">🔌</div><div class="title">无法连接服务器</div><div class="desc">请检查后端服务是否运行</div></div>';
+                });
         }
 
         function claimTask(taskId) {
@@ -498,30 +964,28 @@
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ creator_id: currentCreator.id })
             })
-            .then(r => r.json())
-            .then(res => {
-                if (res.code === 0) {
-                    showToast("认领成功！视频正在自动生成 🎬");
-                    loadTasks();
-                } else {
-                    showToast(res.detail || "认领失败");
-                }
-            })
-            .catch(() => showToast("网络错误"));
+                .then(r => r.json())
+                .then(res => {
+                    if (res.code === 0) {
+                        showToast("认领成功，视频正在自动生成");
+                        loadTasks();
+                    } else {
+                        showToast(res.detail || "认领失败");
+                    }
+                })
+                .catch(() => showToast("网络错误"));
         }
 
-        // ====== 我的作品 ======
         function loadMyWorks() {
             if (!currentCreator) return;
             fetch(apiUrl + "/tasks?creator_id=" + currentCreator.id)
-            .then(r => r.json())
-            .then(res => {
-                const list = document.getElementById("worksList");
-                if (!res.data || res.data.length === 0) {
-                    list.innerHTML = '<div class="empty"><span class="emoji">🎬</span>暂无作品，快去认领任务吧！</div>';
-                    return;
-                }
-                list.innerHTML = res.data.map(t => {
+                .then(r => r.json())
+                .then(res => {
+                    const list = document.getElementById("worksList");
+                    if (!res.data || res.data.length === 0) {
+                        list.innerHTML = '<div class="empty-state"><div class="icon">🎬</div><div class="title">还没有作品</div><div class="desc">去任务大厅认领第一个任务吧</div></div>';
+                        return;
+                    }
                     const statusMap = {
                         "pending": ["待处理", "status-pending"],
                         "claimed": ["已认领", "status-claimed"],
@@ -529,78 +993,74 @@
                         "published": ["已发布", "status-published"],
                         "completed": ["已完成", "status-completed"],
                     };
-                    const [statusText, statusClass] = statusMap[t.status] || ["未知", "status-pending"];
-                    let videoHtml = "";
-                    if (t.video_url) {
-                        videoHtml = `<video src="${t.video_url}" controls style="width:100%;border-radius:8px;margin-top:8px;"></video>`;
-                    }
-                    return `
-                        <div class="task-item" style="flex-direction:column;align-items:stretch;">
-                            <div style="display:flex;justify-content:space-between;align-items:center;">
-                                <div class="task-info">
-                                    <div class="book-name">📕 ${t.book_name}</div>
-                                    <div class="book-meta">赛道：${t.book_type}</div>
+                    list.innerHTML = res.data.map(t => {
+                        const [statusText, statusClass] = statusMap[t.status] || ["未知", "status-pending"];
+                        let videoHtml = "";
+                        if (t.video_url) {
+                            videoHtml = `<video src="${t.video_url}" controls style="width:100%;border-radius:8px;margin-top:12px;"></video>`;
+                        }
+                        return `
+                            <div class="task-card" style="flex-direction:column;align-items:stretch;">
+                                <div style="display:flex;align-items:center;gap:12px;">
+                                    <div class="book-icon">📕</div>
+                                    <div class="task-body">
+                                        <div class="title">${t.book_name}</div>
+                                        <div class="meta">${t.book_type}</div>
+                                    </div>
+                                    <span class="status-badge ${statusClass}">${statusText}</span>
                                 </div>
-                                <span class="status-badge ${statusClass}">${statusText}</span>
+                                ${videoHtml}
                             </div>
-                            ${videoHtml}
-                        </div>
-                    `;
-                }).join("");
-            })
-            .catch(() => {
-                document.getElementById("worksList").innerHTML = '<div class="empty"><span class="emoji">🔌</span>无法连接服务器</div>';
-            });
+                        `;
+                    }).join("");
+                })
+                .catch(() => {
+                    document.getElementById("worksList").innerHTML = '<div class="empty-state"><div class="icon">🔌</div><div class="title">无法连接服务器</div><div class="desc">请检查后端服务是否运行</div></div>';
+                });
         }
 
-        // ====== 我的账单 ======
         function loadBills() {
             if (!currentCreator) return;
-
-            // 加载创作者详情
             fetch(apiUrl + "/creators/" + currentCreator.id)
-            .then(r => r.json())
-            .then(res => {
-                if (res.code === 0) {
-                    const d = res.data;
-                    document.getElementById("totalEarnings").textContent = "¥" + (d.total_earnings || 0).toFixed(0);
-                    document.getElementById("videoCount").textContent = d.video_count || 0;
-                    currentCreator.balance = d.balance;
-                    showCreatorBar();
-                }
-            })
-            .catch(() => {});
-
-            // 加载订单列表
+                .then(r => r.json())
+                .then(res => {
+                    if (res.code === 0) {
+                        const d = res.data;
+                        document.getElementById("totalEarnings").textContent = (d.total_earnings || 0).toFixed(0);
+                        document.getElementById("videoCount").textContent = d.video_count || 0;
+                        currentCreator.balance = d.balance;
+                        showCreatorBar();
+                    }
+                })
+                .catch(() => {});
             fetch(apiUrl + "/orders?creator_id=" + currentCreator.id)
-            .then(r => r.json())
-            .then(res => {
-                const list = document.getElementById("billList");
-                if (!res.data || res.data.length === 0) {
-                    list.innerHTML = '<div class="empty"><span class="emoji">💰</span>暂无收益记录</div>';
-                    document.getElementById("orderCount").textContent = "0";
-                    return;
-                }
-                document.getElementById("orderCount").textContent = res.data.length;
-                list.innerHTML = res.data.map(o => `
-                    <div class="task-item">
-                        <div class="task-info">
-                            <div class="book-name">📕 ${o.book_name || '未知图书'}</div>
-                            <div class="book-meta">订单金额：¥${o.order_amount} | 佣金：¥${o.commission_amount}</div>
-                            <div class="commission">实得收益：¥${o.creator_earnings}（平台费¥${o.platform_fee}）</div>
+                .then(r => r.json())
+                .then(res => {
+                    const list = document.getElementById("billList");
+                    if (!res.data || res.data.length === 0) {
+                        list.innerHTML = '<div class="empty-state"><div class="icon">💰</div><div class="title">暂无收益记录</div><div class="desc">发布视频后，佣金会在这里显示</div></div>';
+                        document.getElementById("orderCount").textContent = "0";
+                        return;
+                    }
+                    document.getElementById("orderCount").textContent = res.data.length;
+                    list.innerHTML = res.data.map(o => `
+                        <div class="task-card">
+                            <div class="book-icon">📕</div>
+                            <div class="task-body">
+                                <div class="title">${o.book_name || '未知图书'}</div>
+                                <div class="meta">订单 ¥${o.order_amount} · 佣金 ¥${o.commission_amount}</div>
+                                <div class="reward">实得 ¥${o.creator_earnings} (平台费 ¥${o.platform_fee})</div>
+                            </div>
+                            <span class="status-badge status-published">已结算</span>
                         </div>
-                        <span class="status-badge status-published">已结算</span>
-                    </div>
-                `).join("");
-            })
-            .catch(() => {
-                document.getElementById("billList").innerHTML = '<div class="empty"><span class="emoji">🔌</span>无法连接服务器</div>';
-            });
+                    `).join("");
+                })
+                .catch(() => {
+                    document.getElementById("billList").innerHTML = '<div class="empty-state"><div class="icon">🔌</div><div class="title">无法连接服务器</div><div class="desc">请检查后端服务是否运行</div></div>';
+                });
         }
 
-        // ====== Tab切换 ======
         function switchTab(name, el) {
-            // 未注册时，任务/作品/账单需要先登录
             if (!currentCreator && name !== "generate") {
                 promptRegister();
                 return;
@@ -609,13 +1069,11 @@
             document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
             el.classList.add("active");
             document.getElementById("panel-" + name).classList.add("active");
-
             if (name === "tasks") loadTasks();
             if (name === "works") loadMyWorks();
             if (name === "bill") loadBills();
         }
 
-        // ====== Toast提示 ======
         function showToast(msg) {
             const t = document.getElementById("toast");
             t.textContent = msg;
@@ -623,7 +1081,6 @@
             setTimeout(() => t.classList.remove("show"), 2500);
         }
 
-        // ====== 启动 ======
         init();
     </script>
 </body>
