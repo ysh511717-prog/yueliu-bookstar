@@ -165,10 +165,10 @@
     </div>
 
     <div class="tabs">
-        <div class="tab active" onclick="switchTab('publish')">📤 发布任务</div>
-        <div class="tab" onclick="switchTab('manage')">📋 任务管理</div>
-        <div class="tab" onclick="switchTab('stats')">📊 数据统计</div>
-        <div class="tab" onclick="switchTab('profit')">💰 盈利模式</div>
+        <div class="tab active" onclick="switchTab('publish', this)">📤 发布任务</div>
+        <div class="tab" onclick="switchTab('manage', this)">📋 任务管理</div>
+        <div class="tab" onclick="switchTab('stats', this)">📊 数据统计</div>
+        <div class="tab" onclick="switchTab('profit', this)">💰 盈利模式</div>
     </div>
 
     <div class="content">
@@ -546,10 +546,10 @@
         }
 
         // ====== Tab切换 ======
-        function switchTab(name) {
+        function switchTab(name, el) {
             document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
             document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
-            event.target.classList.add("active");
+            el.classList.add("active");
             document.getElementById("panel-" + name).classList.add("active");
 
             if (name === "manage") loadMyTasks();
