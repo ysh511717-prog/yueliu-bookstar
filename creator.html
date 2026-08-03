@@ -174,7 +174,7 @@
 </head>
 <body>
     <!-- 注册弹窗 -->
-    <div class="modal-overlay" id="registerModal" style="display:none;">
+    <div class="modal-overlay" id="registerModal">
         <div class="modal-box">
             <h2>👋 欢迎加入阅流·书星</h2>
             <p>输入昵称，开启你的创作赚钱之旅</p>
@@ -208,9 +208,10 @@
                 <span class="name" id="creatorName"></span>
                 <span class="level" id="creatorLevel"></span>
             </div>
-            <div>
+            <div style="display:flex;align-items:center;gap:12px;">
                 <span style="font-size:12px;color:#999;">余额</span>
                 <span class="balance" id="creatorBalance">¥0.00</span>
+                <button onclick="logout()" style="background:#ff4d4f;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;">退出</button>
             </div>
         </div>
 
@@ -320,21 +321,32 @@
             renderCategories();
             // 尝试从本地存储恢复创作者信息
             const saved = localStorage.getItem("creator");
-            if (saved) {
-                currentCreator = JSON.parse(saved);
-                showCreatorBar();
-                loadTasks();
-                loadMyWorks();
-                loadBills();
-            } else {
-                // 首次进入引导注册
-                promptRegister();
+            if (saved && saved !== "null" && saved !== "undefined") {
+                try {
+                    currentCreator = JSON.parse(saved);
+                    if (currentCreator && currentCreator.id) {
+                        document.getElementById("registerModal").style.display = "none";
+                        showCreatorBar();
+                        loadTasks();
+                        loadMyWorks();
+                        loadBills();
+                        return;
+                    }
+                } catch(e) {
+                    localStorage.removeItem("creator");
+                }
             }
+            // 没有有效登录信息，弹窗保持显示（默认已显示）
+            document.getElementById("registerNameInput").focus();
         }
 
         function promptRegister() {
             document.getElementById("registerModal").style.display = "flex";
             document.getElementById("registerNameInput").focus();
+        }
+
+        function hideRegisterModal() {
+            document.getElementById("registerModal").style.display = "none";
         }
 
         function doRegister() {
@@ -343,7 +355,7 @@
                 showToast("请输入昵称");
                 return;
             }
-            document.getElementById("registerModal").style.display = "none";
+            hideRegisterModal();
             fetch(apiUrl + "/creators", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -367,7 +379,7 @@
         }
 
         function skipRegister() {
-            document.getElementById("registerModal").style.display = "none";
+            hideRegisterModal();
         }
 
         function showCreatorBar() {
@@ -375,6 +387,20 @@
             document.getElementById("creatorName").textContent = currentCreator.name;
             document.getElementById("creatorLevel").textContent = currentCreator.member_level;
             document.getElementById("creatorBalance").textContent = "¥" + (currentCreator.balance || 0).toFixed(2);
+        }
+
+        function logout() {
+            localStorage.removeItem("creator");
+            currentCreator = null;
+            document.getElementById("creatorBar").style.display = "none";
+            // 清空列表
+            document.getElementById("taskList").innerHTML = '<div class="empty"><span class="emoji">📋</span>请先注册/登录</div>';
+            document.getElementById("worksList").innerHTML = '<div class="empty"><span class="emoji">📹</span>请先注册/登录</div>';
+            document.getElementById("billList").innerHTML = '<div class="empty"><span class="emoji">💰</span>请先注册/登录</div>';
+            // 回到生成脚本标签
+            switchTab("generate", document.querySelector('#tabBar .tab[data-tab="generate"]'));
+            // 显示注册弹窗
+            promptRegister();
         }
 
         // ====== 赛道选择 ======
