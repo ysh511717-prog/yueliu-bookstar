@@ -144,9 +144,46 @@
             font-size: 14px; z-index: 9999; opacity: 0; transition: opacity 0.3s;
         }
         .toast.show { opacity: 1; }
+        /* 注册弹窗 */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center;
+            z-index: 10000;
+        }
+        .modal-box {
+            background: #fff; border-radius: 16px; padding: 30px 24px; width: 360px; max-width: 90vw;
+            text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+        }
+        .modal-box h2 { font-size: 20px; margin-bottom: 8px; color: #333; }
+        .modal-box p { font-size: 13px; color: #999; margin-bottom: 20px; }
+        .modal-box input {
+            width: 100%; padding: 12px 14px; border: 2px solid #e8e8e8; border-radius: 10px;
+            font-size: 15px; outline: none; box-sizing: border-box; text-align: center;
+        }
+        .modal-box input:focus { border-color: #667eea; }
+        .modal-box .btn-confirm {
+            width: 100%; margin-top: 16px; padding: 12px; border: none; border-radius: 10px;
+            background: #667eea; color: #fff; font-size: 16px; font-weight: 600; cursor: pointer;
+        }
+        .modal-box .btn-confirm:hover { background: #5a6fd6; }
+        .modal-box .btn-skip {
+            margin-top: 10px; background: none; border: none; color: #999; font-size: 13px;
+            cursor: pointer; text-decoration: underline;
+        }
     </style>
 </head>
 <body>
+    <!-- 注册弹窗 -->
+    <div class="modal-overlay" id="registerModal" style="display:none;">
+        <div class="modal-box">
+            <h2>👋 欢迎加入阅流·书星</h2>
+            <p>输入昵称，开启你的创作赚钱之旅</p>
+            <input type="text" id="registerNameInput" placeholder="请输入你的昵称" maxlength="20">
+            <button class="btn-confirm" onclick="doRegister()">开始创作 🚀</button>
+            <button class="btn-skip" onclick="skipRegister()">先逛逛</button>
+        </div>
+    </div>
+
     <!-- ====== 后端API地址（部署后修改为你的Render域名）====== -->
     <script>
         const apiUrl = "https://yueliu-bookstar.onrender.com/api";
@@ -275,6 +312,11 @@
                 });
             });
 
+            // 回车键提交注册
+            document.getElementById("registerNameInput").addEventListener("keydown", function(e) {
+                if (e.key === "Enter") doRegister();
+            });
+
             renderCategories();
             // 尝试从本地存储恢复创作者信息
             const saved = localStorage.getItem("creator");
@@ -291,8 +333,17 @@
         }
 
         function promptRegister() {
-            const name = prompt("欢迎使用阅流·书星！请输入你的昵称：");
-            if (!name) return;
+            document.getElementById("registerModal").style.display = "flex";
+            document.getElementById("registerNameInput").focus();
+        }
+
+        function doRegister() {
+            const name = document.getElementById("registerNameInput").value.trim();
+            if (!name) {
+                showToast("请输入昵称");
+                return;
+            }
+            document.getElementById("registerModal").style.display = "none";
             fetch(apiUrl + "/creators", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -304,10 +355,19 @@
                     currentCreator = { id: res.data.creator_id, name: name, member_level: "免费", balance: 0 };
                     localStorage.setItem("creator", JSON.stringify(currentCreator));
                     showCreatorBar();
+                    loadTasks();
+                    loadMyWorks();
+                    loadBills();
                     showToast("注册成功！开始接单赚钱吧 🎉");
+                } else {
+                    showToast("注册失败：" + (res.message || "请重试"));
                 }
             })
             .catch(() => showToast("网络错误，请检查后端服务是否启动"));
+        }
+
+        function skipRegister() {
+            document.getElementById("registerModal").style.display = "none";
         }
 
         function showCreatorBar() {
@@ -514,6 +574,11 @@
 
         // ====== Tab切换 ======
         function switchTab(name, el) {
+            // 未注册时，任务/作品/账单需要先登录
+            if (!currentCreator && name !== "generate") {
+                promptRegister();
+                return;
+            }
             document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
             document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
             el.classList.add("active");
