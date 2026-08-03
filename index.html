@@ -124,12 +124,12 @@
 
         /* ── 开发者入口（极度隐蔽）── */
         .dev-link {
-            position: fixed; bottom: 6px; right: 12px; z-index: 9997;
-            font-size: 11px; color: #2a2a4a; cursor: default; user-select: none;
-            padding: 2px 6px; border-radius: 4px; transition: color 0.3s;
+            position: fixed; bottom: 8px; left: 14px; z-index: 9997;
+            font-size: 13px; color: #555; cursor: default; user-select: none;
+            padding: 4px 10px; border-radius: 4px; transition: color 0.3s;
         }
-        .dev-link:hover { color: #4a4a6a; }
-        .dev-link.visible { color: #888; cursor: pointer; }
+        .dev-link:hover { color: #999; }
+        .dev-link.visible { color: #aaa; cursor: pointer; }
         .dev-link.visible:hover { color: #a78bfa; }
 
         /* ── 密码弹窗 ── */
@@ -177,10 +177,10 @@
         </a>
     </div>
 
-    <div class="footer">© 2025 阅流·书星 — 让每一本好书都能被看见</div>
+    <div class="footer">© 2026 阅流·书星 — 让每一本好书都能被看见</div>
 
     <!-- 开发者入口（隐藏，点击3次才触发） -->
-    <div class="dev-link" id="devLink">·</div>
+    <div class="dev-link" id="devLink">⚙</div>
 
     <!-- ====== AI创作助手浮窗 ====== -->
     <div class="ai-chat-btn" id="ai-chat-btn" title="AI创作助手">🤖</div>
@@ -480,7 +480,7 @@
                 const submitBtn = overlay.querySelector('#dev-pw-submit');
 
                 // 默认密码
-                const DEV_PASSWORD = 'yueliu2025';
+                const DEV_PASSWORD = 'yueliu2026';
 
                 submitBtn.addEventListener('click', () => {
                     if (input.value === DEV_PASSWORD) {
