@@ -240,6 +240,15 @@ async def get_task(task_id: int):
         return {"code": 1, "msg": "任务不存在"}
     return {"code": 0, "data": dict(row)}
 
+@app.delete("/api/tasks/{task_id}")
+async def delete_task(task_id: int):
+    with get_db() as conn:
+        # 先删除关联的视频和分发记录
+        conn.execute("DELETE FROM distributes WHERE video_id IN (SELECT id FROM videos WHERE task_id=?)", (task_id,))
+        conn.execute("DELETE FROM videos WHERE task_id=?", (task_id,))
+        conn.execute("DELETE FROM book_tasks WHERE id=?", (task_id,))
+    return {"code": 0, "msg": "任务已删除"}
+
 # ============================================================
 #  健康检查（排除线路问题）
 # ============================================================

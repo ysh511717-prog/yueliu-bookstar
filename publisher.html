@@ -158,9 +158,60 @@
         }
         .profit-card h4 { font-size: 14px; color: #d48806; margin-bottom: 8px; }
         .profit-card p { font-size: 13px; color: #666; line-height: 1.6; }
+
+        /* ── 密码验证页 ── */
+        .pw-gate {
+            position: fixed; inset: 0; z-index: 99999;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .pw-gate-dialog {
+            background: rgba(255,255,255,0.06); backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 20px;
+            padding: 44px 40px; width: 380px; max-width: 90vw;
+            text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+        }
+        .pw-gate-dialog .gate-icon { font-size: 44px; margin-bottom: 14px; }
+        .pw-gate-dialog h2 { color: #11998e; font-size: 1.3rem; margin-bottom: 6px; }
+        .pw-gate-dialog p { color: #a8b2c1; font-size: 0.85rem; margin-bottom: 28px; }
+        .pw-gate-dialog input {
+            width: 100%; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+            color: #fff; padding: 13px 16px; border-radius: 10px; font-size: 1.1rem;
+            text-align: center; letter-spacing: 6px; outline: none; margin-bottom: 12px;
+            transition: border-color 0.2s;
+        }
+        .pw-gate-dialog input:focus { border-color: #11998e; }
+        .pw-gate-dialog .gate-error { color: #ef4444; font-size: 0.8rem; margin-bottom: 8px; display: none; }
+        .pw-gate-dialog .gate-btn {
+            width: 100%; padding: 13px; border-radius: 10px; font-weight: 600;
+            font-size: 1rem; cursor: pointer; border: none; transition: all 0.2s;
+            background: linear-gradient(135deg, #11998e, #38ef7d); color: #fff;
+        }
+        .pw-gate-dialog .gate-btn:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 6px 24px rgba(17,153,142,0.35); }
+
+        /* ── 删除按钮 ── */
+        .btn-delete {
+            background: #fff; color: #f5222d; border: 1px solid #ffccc7;
+            padding: 4px 14px; border-radius: 6px; font-size: 12px; cursor: pointer;
+            transition: all 0.2s; white-space: nowrap;
+        }
+        .btn-delete:hover { background: #fff2f0; border-color: #f5222d; }
     </style>
 </head>
 <body>
+
+    <!-- ====== 密码验证门 ====== -->
+    <div class="pw-gate" id="pwGate">
+        <div class="pw-gate-dialog">
+            <div class="gate-icon">🔐</div>
+            <h2>出版社后台管理</h2>
+            <p>请输入管理密码以继续</p>
+            <input type="password" id="gatePassword" placeholder="输入密码" autocomplete="off">
+            <div class="gate-error" id="gateError">密码错误，请重试</div>
+            <button class="gate-btn" id="gateSubmit">验证进入</button>
+        </div>
+    </div>
+
     <!-- ====== 后端API地址（部署后修改为你的Render域名）====== -->
     <script>
         const apiUrl = "https://yueliu-bookstar.onrender.com/api";
@@ -334,6 +385,44 @@
     <div class="toast" id="toast"></div>
 
     <script>
+        // ====== 密码验证 ======
+        const DEV_PASSWORD = 'yueliu2025';
+        const SESSION_KEY = 'yueliu_publisher_auth';
+
+        function checkAuth() {
+            if (sessionStorage.getItem(SESSION_KEY) === '1') {
+                document.getElementById('pwGate').style.display = 'none';
+                return true;
+            }
+            return false;
+        }
+
+        function setupPasswordGate() {
+            const gate = document.getElementById('pwGate');
+            const input = document.getElementById('gatePassword');
+            const error = document.getElementById('gateError');
+            const submitBtn = document.getElementById('gateSubmit');
+
+            if (checkAuth()) return;
+
+            submitBtn.addEventListener('click', () => {
+                if (input.value === DEV_PASSWORD) {
+                    sessionStorage.setItem(SESSION_KEY, '1');
+                    gate.style.display = 'none';
+                } else {
+                    error.style.display = 'block';
+                    input.value = '';
+                    input.focus();
+                }
+            });
+
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') submitBtn.click();
+            });
+
+            setTimeout(() => input.focus(), 200);
+        }
+
         // ====== 全局状态 ======
         let selectedCategory = null;
         let currentPublisher = null;
@@ -348,6 +437,10 @@
 
         // ====== 初始化 ======
         function init() {
+            // 先检查密码
+            setupPasswordGate();
+            if (!checkAuth()) return;
+
             // 绑定标签点击事件
             document.querySelectorAll("#tabBar .tab").forEach(tab => {
                 tab.addEventListener("click", function() {
@@ -505,10 +598,13 @@
                         videoHtml = `<video src="${t.video_url}" controls style="width:100%;border-radius:8px;margin-top:10px;"></video>`;
                     }
                     return `
-                        <div class="task-item">
+                        <div class="task-item" id="task-${t.id}">
                             <div class="task-header">
                                 <span class="book-name">📕 ${t.book_name}</span>
-                                <span class="time">${t.created_at || ''}</span>
+                                <div style="display:flex;align-items:center;gap:8px;">
+                                    <span class="time">${t.created_at || ''}</span>
+                                    <button class="btn-delete" onclick="deleteTask(${t.id})">🗑 删除</button>
+                                </div>
                             </div>
                             <div class="task-meta">
                                 <span>赛道：${t.book_type}</span>
@@ -524,6 +620,26 @@
             .catch(() => {
                 document.getElementById("taskList").innerHTML = '<div class="empty"><span class="emoji">🔌</span>无法连接服务器</div>';
             });
+        }
+
+        // ====== 删除任务 ======
+        function deleteTask(taskId) {
+            if (!confirm('确定要删除这个任务吗？删除后不可恢复。')) return;
+
+            fetch(apiUrl + "/tasks/" + taskId, { method: "DELETE" })
+            .then(r => r.json())
+            .then(res => {
+                if (res.code === 0) {
+                    showToast("任务已删除 ✅");
+                    // 从页面移除
+                    const el = document.getElementById('task-' + taskId);
+                    if (el) el.style.display = 'none';
+                    setTimeout(() => loadMyTasks(), 300);
+                } else {
+                    showToast(res.msg || "删除失败");
+                }
+            })
+            .catch(() => showToast("网络错误，请检查后端服务"));
         }
 
         // ====== 数据统计 ======

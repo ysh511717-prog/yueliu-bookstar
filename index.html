@@ -121,6 +121,46 @@
             .ai-chat-panel { width: calc(100vw - 16px); height: 480px; right: 8px; bottom: 80px; border-radius: 12px; }
             .ai-chat-btn { width: 48px; height: 48px; font-size: 20px; bottom: 16px; right: 16px; }
         }
+
+        /* ── 开发者入口（极度隐蔽）── */
+        .dev-link {
+            position: fixed; bottom: 6px; right: 12px; z-index: 9997;
+            font-size: 11px; color: #2a2a4a; cursor: default; user-select: none;
+            padding: 2px 6px; border-radius: 4px; transition: color 0.3s;
+        }
+        .dev-link:hover { color: #4a4a6a; }
+        .dev-link.visible { color: #888; cursor: pointer; }
+        .dev-link.visible:hover { color: #a78bfa; }
+
+        /* ── 密码弹窗 ── */
+        .pw-overlay {
+            position: fixed; inset: 0; z-index: 99999;
+            background: rgba(5,5,20,0.92); backdrop-filter: blur(8px);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .pw-dialog {
+            background: #1a1a2e; border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px; padding: 40px 36px; width: 380px; max-width: 90vw;
+            text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+        .pw-dialog .pw-icon { font-size: 40px; margin-bottom: 12px; }
+        .pw-dialog h3 { color: #eee; font-size: 1.2rem; margin-bottom: 6px; }
+        .pw-dialog p { color: #777; font-size: 0.8rem; margin-bottom: 24px; }
+        .pw-dialog input {
+            width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12);
+            color: #eee; padding: 12px 16px; border-radius: 10px; font-size: 1rem;
+            text-align: center; letter-spacing: 4px; outline: none; margin-bottom: 12px;
+            transition: border-color 0.2s;
+        }
+        .pw-dialog input:focus { border-color: #a78bfa; }
+        .pw-dialog .pw-error { color: #ef4444; font-size: 0.78rem; margin-bottom: 8px; display: none; }
+        .pw-dialog button {
+            width: 100%; padding: 12px; border-radius: 10px; font-weight: 600;
+            font-size: 0.9rem; cursor: pointer; border: none; transition: all 0.2s;
+            background: linear-gradient(135deg,#667eea,#764ba2); color: #fff;
+        }
+        .pw-dialog button:hover { opacity: 0.9; transform: translateY(-1px); }
+        .pw-dialog .pw-hint { margin-top: 16px; font-size: 0.7rem; color: #555; }
     </style>
 </head>
 <body>
@@ -135,14 +175,12 @@
             <h2>创作者中心</h2>
             <p>AI 生成口播脚本<br>认领图书推广任务<br>上传视频赚收益</p>
         </a>
-        <a href="publisher.html" class="card card-publisher">
-            <div class="card-icon">🏢</div>
-            <h2>出版社后台</h2>
-            <p>发布图书推广任务<br>自动触发 AI 视频<br>查看分发数据</p>
-        </a>
     </div>
 
     <div class="footer">© 2025 阅流·书星 — 让每一本好书都能被看见</div>
+
+    <!-- 开发者入口（隐藏，点击3次才触发） -->
+    <div class="dev-link" id="devLink">·</div>
 
     <!-- ====== AI创作助手浮窗 ====== -->
     <div class="ai-chat-btn" id="ai-chat-btn" title="AI创作助手">🤖</div>
@@ -397,6 +435,76 @@
 
         updateStatus();
         setTimeout(() => btn.classList.add('pulse'), 5000);
+
+        // ── 开发者入口：连续点击右下角"·"3次触发 ──
+        (function() {
+            const devLink = document.getElementById('devLink');
+            let clickCount = 0;
+            let resetTimer = null;
+
+            devLink.addEventListener('click', function() {
+                clickCount++;
+                if (clickCount === 1) {
+                    resetTimer = setTimeout(() => { clickCount = 0; devLink.classList.remove('visible'); }, 2000);
+                }
+                if (clickCount >= 2) {
+                    devLink.classList.add('visible');
+                }
+                if (clickCount >= 3) {
+                    clearTimeout(resetTimer);
+                    clickCount = 0;
+                    devLink.classList.remove('visible');
+                    showDevPassword();
+                }
+            });
+
+            function showDevPassword() {
+                const overlay = document.createElement('div');
+                overlay.className = 'pw-overlay';
+                overlay.id = 'dev-pw-overlay';
+                overlay.innerHTML = `
+                    <div class="pw-dialog">
+                        <div class="pw-icon">🔐</div>
+                        <h3>开发者验证</h3>
+                        <p>请输入后台管理密码</p>
+                        <input type="password" id="dev-pw-input" placeholder="输入密码" autocomplete="off">
+                        <div class="pw-error" id="dev-pw-error">密码错误，请重试</div>
+                        <button id="dev-pw-submit">进入后台</button>
+                        <div class="pw-hint">ESC 关闭</div>
+                    </div>
+                `;
+                document.body.appendChild(overlay);
+
+                const input = overlay.querySelector('#dev-pw-input');
+                const error = overlay.querySelector('#dev-pw-error');
+                const submitBtn = overlay.querySelector('#dev-pw-submit');
+
+                // 默认密码
+                const DEV_PASSWORD = 'yueliu2025';
+
+                submitBtn.addEventListener('click', () => {
+                    if (input.value === DEV_PASSWORD) {
+                        document.body.removeChild(overlay);
+                        window.location.href = 'publisher.html';
+                    } else {
+                        error.style.display = 'block';
+                        input.value = '';
+                        input.focus();
+                    }
+                });
+
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') submitBtn.click();
+                    if (e.key === 'Escape') document.body.removeChild(overlay);
+                });
+
+                overlay.addEventListener('click', (e) => {
+                    if (e.target === overlay) document.body.removeChild(overlay);
+                });
+
+                setTimeout(() => input.focus(), 100);
+            }
+        })();
     })();
     </script>
 
